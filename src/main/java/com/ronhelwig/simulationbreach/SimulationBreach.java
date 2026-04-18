@@ -1,5 +1,12 @@
 package com.ronhelwig.simulationbreach;
 
+import com.ronhelwig.simulationbreach.config.SimulationBreachConfig;
+import com.ronhelwig.simulationbreach.config.SimulationBreachConfigLoader;
+import com.ronhelwig.simulationbreach.entity.ModEntities;
+import com.ronhelwig.simulationbreach.gameplay.InfectionRules;
+import com.ronhelwig.simulationbreach.gameplay.OutbreakDifficulty;
+import com.ronhelwig.simulationbreach.network.ModNetworking;
+import com.ronhelwig.simulationbreach.outbreak.OutbreakManager;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -7,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public class SimulationBreach implements ModInitializer {
 	public static final String MOD_ID = "simulation-breach";
+	public static SimulationBreachConfig CONFIG = SimulationBreachConfig.defaults();
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
@@ -20,5 +28,15 @@ public class SimulationBreach implements ModInitializer {
 		// Proceed with mild caution.
 
 		LOGGER.info("Entering the world!");
+		CONFIG = SimulationBreachConfigLoader.load(MOD_ID, LOGGER);
+		ModNetworking.registerPayloads();
+		ModEntities.register();
+		OutbreakManager.register();
+		LOGGER.info(
+				"Loaded Simulation Breach config: normal initial Agent chance={}, transformation duration={} ticks, outbreak interval={} ticks",
+				InfectionRules.initialPassiveAgentChance(CONFIG, OutbreakDifficulty.NORMAL),
+				CONFIG.transformationDurationTicks(),
+				CONFIG.outbreakCheckIntervalTicks()
+		);
 	}
 }

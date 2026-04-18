@@ -55,6 +55,8 @@ Default exclusions:
 - Ambient mobs, unless explicitly enabled
 - Any entity tagged or configured as immune
 
+Initial outbreak eligibility must also be player-adjacent. A mob should only be eligible for natural conversion when it is within the configured distance of a non-spectator player and, by default, has a reasonable navigable route to that player. A mob sealed in an unreachable cave, pen, or room near a player should not naturally transform just because it is close by. Java implementations should use server-side mob navigation or pathfinding where practical. Bedrock implementations may approximate this with Script API path checks, line-of-sight plus navigation heuristics, or conservative exclusion rules when exact pathfinding is unavailable.
+
 The initial conversion chance must be low enough that a world does not collapse immediately. The base default chance is `0.00005` per eligible outbreak check before difficulty scaling. The implementation must define the check cadence clearly in code and config documentation.
 
 Initial outbreak chance must scale by world difficulty:
@@ -66,6 +68,17 @@ Initial outbreak chance must scale by world difficulty:
 - Hardcore: highest chance, where the edition exposes Hardcore as a world mode.
 
 Difficulty scaling must be configurable. Bedrock implementations that cannot distinguish Hardcore from Hard should use the Hard multiplier unless the platform exposes a separate Hardcore flag.
+
+Player actions should create local outbreak pressure instead of the world relying only on passive random checks. These pressure events must be specific, local, time-limited, and configurable. They increase the chance that eligible nearby mobs transform into The Agent, but they must not bypass player-adjacency, reachability, immunity, caps, or delayed transformation requirements.
+
+Version 1 player action pressure should prioritize actions that affect villagers and villages:
+
+- Highest pressure: breaking, placing, or changing blocks that are part of village buildings or villager life, such as beds, job-site blocks, bells, doors, or walls around inhabited village structures.
+- High pressure: directly harming villagers, killing villagers, disrupting villager work or sleep locations, or triggering events that materially alter village safety.
+- Moderate pressure: major block changes near villagers or within a village boundary, even when the block is not a villager point of interest.
+- Low pressure: ordinary non-village block changes near eligible passive mobs.
+
+The pressure system should record enough context to explain debug logs: player, action type, location, affected village or villager context when known, radius, duration, and multiplier. Pressure from repeated actions should have a cap or diminishing returns so a player cannot force immediate world collapse by spam-clicking blocks.
 
 ### 3.2 Agent Combat Conversion
 
@@ -145,6 +158,8 @@ Version 1 transformation behavior:
 
 Transformation state must be server-authoritative. If a transforming entity unloads, dies, or becomes invalid before completion, the implementation must either persist and resume the pending transformation or cancel it safely without duplicating entities.
 
+If a player sees a mob transforming and kills it before the transformation completes, the transformation must fail and The Agent must not spawn. This is required gameplay counterplay, not an optional balance detail.
+
 ## 4. Entity Identity Data
 
 Each affected entity must have explicit persisted breach data.
@@ -196,6 +211,13 @@ Default values:
 | `transformationDurationTicks` | `60` | Time from conversion trigger to replacement. Expected tuning range is 20 to 100 ticks. |
 | `agentConversionDetourRadius` | `4` | Maximum short detour radius for converting mobs while pursuing a player. |
 | `maxAgentsPerChunk` | `3` | Soft cap for Agents in a local area. Bedrock may approximate by chunk-equivalent region. |
+| `enableInitialOutbreaks` | `true` | Whether rare natural initial Agent outbreaks are enabled. |
+| `outbreakCheckIntervalTicks` | `200` | Server ticks between scheduled initial outbreak checks. |
+| `outbreakScanLimitPerLevel` | `256` | Maximum loaded entities inspected per level during one scheduled outbreak check. |
+| `outbreakEligibleRollsPerLevel` | `16` | Maximum eligible non-hostile mobs rolled per level during one scheduled outbreak check. |
+| `initialOutbreakPlayerSearchRadius` | `32.0` | Maximum distance from an eligible mob to a non-spectator player for natural outbreak checks. |
+| `initialOutbreakRequiresReachablePlayer` | `true` | Whether natural outbreak candidates must have a navigable route to a nearby player. |
+| `enablePlaceholderCreeperTransformSound` | `true` | Whether version 1 transformations use the Creeper priming sound until an original sound is available. |
 | `passivePromotionMode` | `PROMOTED_CORRUPTION` | Rule for passive-origin corrupted mobs. |
 | `excludeVillagers` | `false` | Whether villagers are immune from initial and passive conversion. |
 | `excludeTamedAnimals` | `true` | Whether owned tamed animals are immune. |
@@ -203,25 +225,30 @@ Default values:
 
 Additional recommended config:
 
-- `enableInitialOutbreaks`
 - `enableAgentSpread`
 - `eligiblePassiveEntityAllowlist`
 - `eligiblePassiveEntityDenylist`
 - `hostileConversionAllowlist`
 - `corruptedHostilePool`
 - `immuneEntityTypes`
-- `outbreakCheckIntervalTicks`
 - `maxAgentsPerDimension`
 - `conversionRequiresLineOfSight`
-- `enablePlaceholderCreeperTransformSound`
 - `agentPlayerDetectionRange`
 - `agentPlayerTargetPriority`
+- `enablePlayerActionOutbreakPressure`
+- `playerActionPressureRadius`
+- `playerActionPressureDurationTicks`
+- `villageModificationPressureMultiplier`
+- `villagerAffectingPressureMultiplier`
+- `genericBlockChangePressureMultiplier`
+- `maxPlayerActionPressureMultiplier`
 
 Config validation:
 
 - Chances must be clamped to `0.0` through `1.0`.
 - Difficulty multipliers must be non-negative and ordered so Peaceful is the lowest and Hardcore is the highest when Hardcore is available.
 - Cooldowns and intervals must be positive.
+- Player search radii and pressure radii must be positive.
 - Transformation duration must be positive.
 - Caps must allow `0` to disable spread where useful.
 - Invalid entity identifiers must be logged and ignored.
@@ -238,6 +265,7 @@ Required safeguards:
 - Local Agent cap.
 - Configurable conversion chances.
 - Difficulty-scaled initial outbreak chance.
+- Player-adjacent initial outbreak checks with reachable-route validation where practical.
 - Delayed transformation with visible warning.
 - Server-side eligibility checks.
 - Immunity for players and bosses in version 1.
@@ -248,6 +276,7 @@ Recommended safeguards:
 - Dimension cap.
 - Night, biome, or difficulty modifiers.
 - Grace period after a mob is converted.
+- Caps or diminishing returns for repeated player action pressure.
 - Spawn or conversion particles that make outbreaks discoverable.
 - Admin command or config option to disable spread in an existing world.
 
@@ -267,7 +296,10 @@ Metrics to log during development:
 
 - Outbreak checks per interval.
 - Eligible mobs sampled.
+- Eligible mobs rejected because no nearby reachable player exists.
 - Natural conversions.
+- Player action pressure events by type.
+- Active player action pressure records.
 - Melee conversion attempts.
 - Successful conversions by target type.
 - Conversion denial reasons when debug logging is enabled.
@@ -338,7 +370,27 @@ Acceptable tone examples:
 
 Do not use protected character names, franchise names, or direct catchphrases from existing media.
 
-## 12. Version Milestones
+## 12. Visual and Audio Assets
+
+The Agent should be visually readable as a distinct humanoid entity. Version 1 may use a placeholder humanoid model and skin while core mechanics are implemented, but the final asset direction should feel systematic, uncanny, and original.
+
+Required version 1 asset planning:
+
+- Agent skin or texture.
+- Placeholder humanoid Agent model if a custom model is not ready.
+- Transformation visual treatment driven by shaking and optional particles.
+- Placeholder Creeper priming sound for transformation.
+
+Later asset goals:
+
+- Original Simulation Breach transformation sound.
+- Final Agent texture or model.
+- Corrupted mob visual treatment.
+- Transformation particles or shader-like effects that remain readable in normal survival play.
+
+The Agent skin and the transformation presentation should be designed separately. The transformation sells the active conversion process; the Agent skin sells the completed identity.
+
+## 13. Version Milestones
 
 ### Version 1
 
@@ -348,6 +400,7 @@ Do not use protected character names, franchise names, or direct catchphrases fr
 - Player-priority Agent targeting with bounded conversion detours.
 - Delayed shaking transformation before replacement.
 - Placeholder Creeper priming sound for transformation.
+- Placeholder Agent skin or texture.
 - Corrupted hostile intermediate state using vanilla hostile mobs.
 - Persistent origin and infection data.
 - Config file with defaults and validation.
@@ -360,6 +413,7 @@ Do not use protected character names, franchise names, or direct catchphrases fr
 - Custom corrupted mob variants.
 - Stronger visuals and audio.
 - Original Simulation Breach transformation sound.
+- Final Agent skin or model.
 - Optional config screen.
 - More granular entity allowlists and denylists.
 - Admin commands for outbreak control.
@@ -371,7 +425,7 @@ Do not use protected character names, franchise names, or direct catchphrases fr
 - Village-specific outbreak behavior.
 - Additional configurable outbreak events.
 
-## 13. Acceptance Criteria
+## 14. Acceptance Criteria
 
 A Java or Bedrock implementation satisfies this spec when:
 

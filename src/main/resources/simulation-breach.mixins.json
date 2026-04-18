@@ -3,7 +3,7 @@
 	"package": "com.ronhelwig.simulationbreach.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"ExampleMixin"
+		"EntityBreachDataMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
