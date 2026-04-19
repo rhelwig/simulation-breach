@@ -1,6 +1,7 @@
 package com.ronhelwig.simulationbreach.conversion;
 
 import com.ronhelwig.simulationbreach.SimulationBreach;
+import com.ronhelwig.simulationbreach.config.PassivePromotionMode;
 import com.ronhelwig.simulationbreach.config.SimulationBreachConfig;
 import com.ronhelwig.simulationbreach.entity.AgentEntity;
 import com.ronhelwig.simulationbreach.entity.ModEntities;
@@ -10,9 +11,13 @@ import com.ronhelwig.simulationbreach.identity.InfectionStage;
 import com.ronhelwig.simulationbreach.identity.OriginDisposition;
 import com.ronhelwig.simulationbreach.identity.TransformationState;
 import com.ronhelwig.simulationbreach.network.TransformationPresentationNetworking;
+import com.ronhelwig.simulationbreach.sound.ModSounds;
 import com.ronhelwig.simulationbreach.transformation.TransformationManager;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -20,13 +25,18 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Random;
 
 public final class ConversionManager {
+	private static final String NATURAL_OUTBREAK_SOURCE = "initial_outbreak";
+
 	private ConversionManager() {
 	}
 
@@ -107,6 +117,39 @@ public final class ConversionManager {
 		return replaceWithAgent(level, source, sourceData);
 	}
 
+	public static boolean attemptAgentConversion(
+			ServerLevel level,
+			AgentEntity agent,
+			LivingEntity target,
+			SimulationBreachConfig config,
+			Random random
+	) {
+		Objects.requireNonNull(level, "level");
+		Objects.requireNonNull(agent, "agent");
+		Objects.requireNonNull(target, "target");
+		Objects.requireNonNull(config, "config");
+		Objects.requireNonNull(random, "random");
+
+		if (!isAgentConversionTarget(target, config)) {
+			return false;
+		}
+
+		BreachEntityData targetData = breachData(target).orElseGet(() -> cleanDataFor(target));
+		if (targetData.transformationState() == TransformationState.TRANSFORMING
+				|| targetData.infectionStage() == InfectionStage.AGENT) {
+			return false;
+		}
+
+		double chance = agentConversionChance(target, targetData, config);
+		if (chance <= 0.0D || random.nextDouble() >= chance) {
+			logDebug(config, "Agent conversion roll failed: agent={}, target={}, chance={}",
+					agent.getUUID(), EntityType.getKey(target.getType()), chance);
+			return false;
+		}
+
+		return beginAgentTransformation(level, target, config, agent, "agent_spread");
+	}
+
 	public static void cancelTransformation(LivingEntity source, String reason) {
 		Objects.requireNonNull(source, "source");
 		Optional<BreachEntityData> data = breachData(source);
@@ -161,6 +204,7 @@ public final class ConversionManager {
 		TransformationPresentationNetworking.sendStop(source);
 		source.skipDropExperience();
 		source.discard();
+		announceNaturalOutbreakAgent(level, sourceData);
 
 		if (SimulationBreach.CONFIG.debugLogging()) {
 			SimulationBreach.LOGGER.info("Completed Agent transformation from {} at {}",
@@ -200,6 +244,35 @@ public final class ConversionManager {
 		return OriginDisposition.PASSIVE;
 	}
 
+	private static boolean isAgentConversionTarget(LivingEntity target, SimulationBreachConfig config) {
+		if (!target.isAlive() || target.isRemoved() || target instanceof AgentEntity || target instanceof Player) {
+			return false;
+		}
+		if (!(target instanceof Mob)) {
+			return false;
+		}
+		return !config.excludeTamedAnimals()
+				|| !(target instanceof TamableAnimal tamableAnimal)
+				|| !tamableAnimal.isTame();
+	}
+
+	private static double agentConversionChance(
+			LivingEntity target,
+			BreachEntityData targetData,
+			SimulationBreachConfig config
+	) {
+		if (targetData.originDisposition() == OriginDisposition.PASSIVE
+				&& targetData.infectionStage() == InfectionStage.CORRUPTED) {
+			return config.passivePromotionMode() == PassivePromotionMode.PROMOTED_CORRUPTION
+					? config.agentConvertCorruptedPassiveToAgentChance()
+					: 0.0D;
+		}
+		if (targetData.originDisposition() == OriginDisposition.HOSTILE || target instanceof Enemy) {
+			return config.agentConvertHostileToAgentChance();
+		}
+		return config.agentConvertPassiveChance();
+	}
+
 	private static Integer nextGeneration(BreachEntityData sourceData) {
 		OptionalInt generation = sourceData.conversionGeneration();
 		return generation.isPresent() ? generation.getAsInt() + 1 : 1;
@@ -221,10 +294,27 @@ public final class ConversionManager {
 	}
 
 	private static void playTransformationStartSound(ServerLevel level, LivingEntity source, SimulationBreachConfig config) {
-		if (!config.enablePlaceholderCreeperTransformSound()) {
+		if (config.enableAgentTransformSound()) {
+			level.playSound(null, source.blockPosition(), ModSounds.AGENT_TRANSFORM, SoundSource.HOSTILE, 1.0F, 1.0F);
 			return;
 		}
-		level.playSound(null, source.blockPosition(), SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 1.0F, 0.85F);
+		if (config.enablePlaceholderCreeperTransformSound()) {
+			level.playSound(null, source.blockPosition(), SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 1.0F, 0.85F);
+		}
+	}
+
+	private static void announceNaturalOutbreakAgent(ServerLevel level, BreachEntityData sourceData) {
+		if (!SimulationBreach.CONFIG.enableNaturalOutbreakChatNotice()
+				|| !sourceData.debugSource().orElse("").equals(NATURAL_OUTBREAK_SOURCE)) {
+			return;
+		}
+
+		Component message = Component.empty()
+				.append(Component.literal("[SIMULATION BREACH] ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
+				.append(Component.literal("BREACH DETECTED :: ASSIGNING AGENT").withStyle(ChatFormatting.AQUA));
+		for (ServerPlayer player : level.players()) {
+			player.sendSystemMessage(message);
+		}
 	}
 
 	private static boolean isAgentCapReached(ServerLevel level, LivingEntity source, SimulationBreachConfig config) {
@@ -239,9 +329,25 @@ public final class ConversionManager {
 				if (agentsInChunk >= config.maxAgentsPerChunk()) {
 					return true;
 				}
+				continue;
+			}
+			if (entity instanceof LivingEntity livingEntity
+					&& entity.chunkPosition().equals(source.chunkPosition())
+					&& pendingAgentTransformation(livingEntity)) {
+				agentsInChunk++;
+				if (agentsInChunk >= config.maxAgentsPerChunk()) {
+					return true;
+				}
 			}
 		}
 		return false;
+	}
+
+	private static boolean pendingAgentTransformation(LivingEntity entity) {
+		Optional<BreachEntityData> data = breachData(entity);
+		return data.isPresent()
+				&& data.get().transformationState() == TransformationState.TRANSFORMING
+				&& data.get().pendingReplacementEntityType().orElse("").equals(ModEntities.AGENT_ID.toString());
 	}
 
 	private static void logDebug(SimulationBreachConfig config, String message, Object... arguments) {

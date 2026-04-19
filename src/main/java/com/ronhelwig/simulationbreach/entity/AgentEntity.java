@@ -1,10 +1,19 @@
 package com.ronhelwig.simulationbreach.entity;
 
+import com.ronhelwig.simulationbreach.SimulationBreach;
+import com.ronhelwig.simulationbreach.config.SimulationBreachConfig;
+import com.ronhelwig.simulationbreach.conversion.ConversionManager;
 import com.ronhelwig.simulationbreach.identity.BreachEntityData;
 import com.ronhelwig.simulationbreach.identity.BreachEntityDataStorage;
 import com.ronhelwig.simulationbreach.identity.InfectionStage;
 import com.ronhelwig.simulationbreach.identity.OriginDisposition;
+import com.ronhelwig.simulationbreach.sound.ModSounds;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -20,8 +29,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
+
 public class AgentEntity extends Monster {
+	private static final Random CONVERSION_RANDOM = new Random();
+
 	private BreachEntityData breachData = defaultBreachData();
+	private long nextConversionSweepGameTime;
 
 	public AgentEntity(EntityType<? extends AgentEntity> entityType, Level level) {
 		super(entityType, level);
@@ -47,6 +63,22 @@ public class AgentEntity extends Monster {
 		this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
 	}
 
+	@Override
+	protected void customServerAiStep(ServerLevel level) {
+		super.customServerAiStep(level);
+		sweepNearbyConversionTargets(level);
+	}
+
+	@Override
+	protected int getBaseExperienceReward(ServerLevel level) {
+		return SimulationBreach.CONFIG.agentExperienceReward();
+	}
+
+	@Override
+	protected SoundEvent getAmbientSound() {
+		return ModSounds.AGENT_VOICE;
+	}
+
 	public BreachEntityData breachData() {
 		return breachData;
 	}
@@ -66,6 +98,52 @@ public class AgentEntity extends Monster {
 		super.readAdditionalSaveData(input);
 		this.breachData = BreachEntityDataStorage.read(input)
 				.orElseGet(AgentEntity::defaultBreachData);
+	}
+
+	private void sweepNearbyConversionTargets(ServerLevel level) {
+		SimulationBreachConfig config = SimulationBreach.CONFIG;
+		long gameTime = level.getGameTime();
+		if (gameTime < nextConversionSweepGameTime) {
+			return;
+		}
+
+		nextConversionSweepGameTime = gameTime + config.agentConversionCooldownTicks();
+		double radius = Math.max(1.0D, config.agentConversionDetourRadius());
+		List<Entity> nearbyEntities = level.getEntities(
+				this,
+				getBoundingBox().inflate(radius),
+				AgentEntity::isSweepCandidate
+		);
+		nearbyEntities.sort(Comparator.comparingDouble(this::distanceToSqr));
+
+		int attempts = 0;
+		int started = 0;
+		for (Entity entity : nearbyEntities) {
+			if (entity instanceof LivingEntity target) {
+				attempts++;
+				if (ConversionManager.attemptAgentConversion(level, this, target, config, CONVERSION_RANDOM)) {
+					started++;
+				}
+			}
+		}
+
+		if (config.debugLogging() && attempts > 0) {
+			SimulationBreach.LOGGER.info(
+					"Agent conversion sweep: agent={}, position={}, attempts={}, started={}",
+					getUUID(),
+					blockPosition(),
+					attempts,
+					started
+			);
+		}
+	}
+
+	private static boolean isSweepCandidate(Entity entity) {
+		return entity instanceof Mob
+				&& !(entity instanceof AgentEntity)
+				&& !(entity instanceof Player)
+				&& entity.isAlive()
+				&& !entity.isRemoved();
 	}
 
 	private static BreachEntityData defaultBreachData() {

@@ -16,7 +16,9 @@ See [SPECS.md](SPECS.md) for the authoritative gameplay and cross-edition design
 - Passive mobs become corrupted hostile mobs first.
 - Originally hostile mobs can become additional Agents.
 - Corrupted passive-origin mobs follow a configurable promotion rule.
-- Transforming mobs shake for a short configurable delay before replacement. Version 1 may reuse the Creeper priming sound as a placeholder.
+- Transforming mobs shake for a short configurable delay before replacement and play the Agent transformation sound.
+- Completed natural outbreaks send a computer-styled system notice.
+- Remaining in one area gradually raises local natural outbreak pressure, within configurable limits.
 - Agents prioritize nearby players and move to attack them, with only short detours to convert nearby mobs.
 - Spread is controlled by configurable chances, cooldowns, and local caps.
 - Converted mobs remember their original entity type and infection stage.
@@ -53,12 +55,42 @@ The planned configuration includes:
 - Passive, hostile, and corrupted conversion chances.
 - Conversion cooldown.
 - Transformation duration.
+- Transformation sound toggles.
+- Agent XP reward.
 - Maximum Agents in a local area.
+- Local player linger outbreak pressure.
+- Natural outbreak chat notice toggle.
 - Passive-origin promotion mode.
 - Tamed animal exclusions.
 - Debug and performance logging.
 
 The default design favors a rare start, visible escalation, and bounded spread. Details are tracked in [SPECS.md](SPECS.md).
+
+## Agent Assets
+
+The current Agent renderer uses a humanoid zombie-shaped model. Add the Agent texture here:
+
+```text
+src/main/resources/assets/simulation-breach/textures/entity/agent/agent.png
+```
+
+Use a Java Edition PNG texture in the same 64x64 humanoid layout as the vanilla zombie texture. Keep important details bold and high-contrast; the model is seen at distance while moving quickly. The renderer falls back to a tinted vanilla zombie texture until this file exists.
+
+Transformation sound should be an Ogg Vorbis file. For a positional entity sound, use mono audio rather than stereo. Put the first custom transformation sound here:
+
+```text
+src/main/resources/assets/simulation-breach/sounds/entity/agent/transform.ogg
+```
+
+The Java code registers this sound as `simulation-breach:entity.agent.transform`. The Creeper priming sound remains available as a config-controlled fallback when the Agent transform sound is disabled.
+
+The Agent ambient voice uses the same audio format and is loaded from:
+
+```text
+src/main/resources/assets/simulation-breach/sounds/entity/agent/voice.ogg
+```
+
+The Java code registers this sound as `simulation-breach:entity.agent.voice`.
 
 ## Bedrock Edition
 

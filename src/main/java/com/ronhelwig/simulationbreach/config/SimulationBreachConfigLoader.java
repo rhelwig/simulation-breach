@@ -75,6 +75,7 @@ public final class SimulationBreachConfigLoader {
 		private Double agentConvertCorruptedPassiveToAgentChance;
 		private Integer agentConversionCooldownTicks;
 		private Integer transformationDurationTicks;
+		private Integer agentExperienceReward;
 		private Integer agentConversionDetourRadius;
 		private Integer maxAgentsPerChunk;
 		private Boolean enableInitialOutbreaks;
@@ -83,7 +84,14 @@ public final class SimulationBreachConfigLoader {
 		private Integer outbreakEligibleRollsPerLevel;
 		private Double initialOutbreakPlayerSearchRadius;
 		private Boolean initialOutbreakRequiresReachablePlayer;
+		private Boolean enableAgentTransformSound;
 		private Boolean enablePlaceholderCreeperTransformSound;
+		private Boolean enablePlayerLingerOutbreakPressure;
+		private Double playerLingerPressureRadius;
+		private Integer playerLingerPressureGraceTicks;
+		private Integer playerLingerPressureRampTicks;
+		private Double maxPlayerLingerPressureMultiplier;
+		private Boolean enableNaturalOutbreakChatNotice;
 		private PassivePromotionMode passivePromotionMode;
 		private Boolean excludeVillagers;
 		private Boolean excludeTamedAnimals;
@@ -102,6 +110,7 @@ public final class SimulationBreachConfigLoader {
 			data.agentConvertCorruptedPassiveToAgentChance = config.agentConvertCorruptedPassiveToAgentChance();
 			data.agentConversionCooldownTicks = config.agentConversionCooldownTicks();
 			data.transformationDurationTicks = config.transformationDurationTicks();
+			data.agentExperienceReward = config.agentExperienceReward();
 			data.agentConversionDetourRadius = config.agentConversionDetourRadius();
 			data.maxAgentsPerChunk = config.maxAgentsPerChunk();
 			data.enableInitialOutbreaks = config.enableInitialOutbreaks();
@@ -110,7 +119,14 @@ public final class SimulationBreachConfigLoader {
 			data.outbreakEligibleRollsPerLevel = config.outbreakEligibleRollsPerLevel();
 			data.initialOutbreakPlayerSearchRadius = config.initialOutbreakPlayerSearchRadius();
 			data.initialOutbreakRequiresReachablePlayer = config.initialOutbreakRequiresReachablePlayer();
+			data.enableAgentTransformSound = config.enableAgentTransformSound();
 			data.enablePlaceholderCreeperTransformSound = config.enablePlaceholderCreeperTransformSound();
+			data.enablePlayerLingerOutbreakPressure = config.enablePlayerLingerOutbreakPressure();
+			data.playerLingerPressureRadius = config.playerLingerPressureRadius();
+			data.playerLingerPressureGraceTicks = config.playerLingerPressureGraceTicks();
+			data.playerLingerPressureRampTicks = config.playerLingerPressureRampTicks();
+			data.maxPlayerLingerPressureMultiplier = config.maxPlayerLingerPressureMultiplier();
+			data.enableNaturalOutbreakChatNotice = config.enableNaturalOutbreakChatNotice();
 			data.passivePromotionMode = config.passivePromotionMode();
 			data.excludeVillagers = config.excludeVillagers();
 			data.excludeTamedAnimals = config.excludeTamedAnimals();
@@ -153,6 +169,9 @@ public final class SimulationBreachConfigLoader {
 			if (transformationDurationTicks != null) {
 				builder.transformationDurationTicks(transformationDurationTicks);
 			}
+			if (agentExperienceReward != null) {
+				builder.agentExperienceReward(agentExperienceReward);
+			}
 			if (agentConversionDetourRadius != null) {
 				builder.agentConversionDetourRadius(agentConversionDetourRadius);
 			}
@@ -177,8 +196,29 @@ public final class SimulationBreachConfigLoader {
 			if (initialOutbreakRequiresReachablePlayer != null) {
 				builder.initialOutbreakRequiresReachablePlayer(initialOutbreakRequiresReachablePlayer);
 			}
+			if (enableAgentTransformSound != null) {
+				builder.enableAgentTransformSound(enableAgentTransformSound);
+			}
 			if (enablePlaceholderCreeperTransformSound != null) {
 				builder.enablePlaceholderCreeperTransformSound(enablePlaceholderCreeperTransformSound);
+			}
+			if (enablePlayerLingerOutbreakPressure != null) {
+				builder.enablePlayerLingerOutbreakPressure(enablePlayerLingerOutbreakPressure);
+			}
+			if (playerLingerPressureRadius != null) {
+				builder.playerLingerPressureRadius(playerLingerPressureRadius);
+			}
+			if (playerLingerPressureGraceTicks != null) {
+				builder.playerLingerPressureGraceTicks(playerLingerPressureGraceTicks);
+			}
+			if (playerLingerPressureRampTicks != null) {
+				builder.playerLingerPressureRampTicks(playerLingerPressureRampTicks);
+			}
+			if (maxPlayerLingerPressureMultiplier != null) {
+				builder.maxPlayerLingerPressureMultiplier(maxPlayerLingerPressureMultiplier);
+			}
+			if (enableNaturalOutbreakChatNotice != null) {
+				builder.enableNaturalOutbreakChatNotice(enableNaturalOutbreakChatNotice);
 			}
 			if (passivePromotionMode != null) {
 				builder.passivePromotionMode(passivePromotionMode);

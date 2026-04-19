@@ -1,0 +1,12 @@
+{
+  "entity.agent.transform": {
+    "sounds": [
+      "simulation-breach:entity/agent/transform"
+    ]
+  },
+  "entity.agent.voice": {
+    "sounds": [
+      "simulation-breach:entity/agent/voice"
+    ]
+  }
+}

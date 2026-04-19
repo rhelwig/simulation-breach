@@ -8,6 +8,7 @@ import com.ronhelwig.simulationbreach.gameplay.InfectionRules;
 import com.ronhelwig.simulationbreach.gameplay.OutbreakDifficulty;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,12 +19,19 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.Path;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 public final class OutbreakManager {
 	private static final Random RANDOM = new Random();
+	private static final Map<UUID, PlayerLingerState> PLAYER_LINGER_STATES = new HashMap<>();
 
 	private OutbreakManager() {
 	}
@@ -35,6 +43,7 @@ public final class OutbreakManager {
 
 	private static void onEndServerTick(MinecraftServer server) {
 		SimulationBreachConfig config = SimulationBreach.CONFIG;
+		updatePlayerLingerStates(server, config);
 		if (!config.enableInitialOutbreaks() || !shouldRunThisTick(server, config)) {
 			return;
 		}
@@ -56,6 +65,11 @@ public final class OutbreakManager {
 					total.candidateSelections(),
 					elapsedMicros
 			);
+			SimulationBreach.LOGGER.info(
+					"Initial outbreak pressure: activeLingerRecords={}, lingerPressureRolls={}",
+					PLAYER_LINGER_STATES.size(),
+					total.lingerPressureRolls()
+			);
 		}
 	}
 
@@ -68,6 +82,7 @@ public final class OutbreakManager {
 		int eligibleEntitiesFound = 0;
 		int chanceRolls = 0;
 		int candidateSelections = 0;
+		int lingerPressureRolls = 0;
 		OutbreakDifficulty difficulty = difficultyFor(server, level);
 
 		for (Entity entity : level.getAllEntities()) {
@@ -83,14 +98,18 @@ public final class OutbreakManager {
 
 			eligibleEntitiesFound++;
 			chanceRolls++;
-			if (InfectionRules.shouldStartInitialAgentOutbreak(RANDOM, config, difficulty)
+			double pressureMultiplier = playerLingerPressureMultiplier(level, mob(entity), config);
+			if (pressureMultiplier > 1.0D) {
+				lingerPressureRolls++;
+			}
+			if (InfectionRules.shouldStartInitialAgentOutbreak(RANDOM, config, difficulty, pressureMultiplier)
 					&& ConversionManager.beginAgentTransformation(level, mob(entity), config, null, "initial_outbreak")) {
 				candidateSelections++;
-				logCandidateSelection(level, entity, difficulty, config);
+				logCandidateSelection(level, entity, difficulty, config, pressureMultiplier);
 			}
 		}
 
-		return new OutbreakCheckResult(1, entitiesScanned, eligibleEntitiesFound, chanceRolls, candidateSelections);
+		return new OutbreakCheckResult(1, entitiesScanned, eligibleEntitiesFound, chanceRolls, candidateSelections, lingerPressureRolls);
 	}
 
 	private static boolean isInitialOutbreakEligible(ServerLevel level, Entity entity, SimulationBreachConfig config) {
@@ -135,6 +154,51 @@ public final class OutbreakManager {
 		return false;
 	}
 
+	private static void updatePlayerLingerStates(MinecraftServer server, SimulationBreachConfig config) {
+		if (!config.enablePlayerLingerOutbreakPressure()) {
+			PLAYER_LINGER_STATES.clear();
+			return;
+		}
+
+		double resetDistanceSqr = config.playerLingerPressureRadius() * config.playerLingerPressureRadius();
+		Set<UUID> activePlayers = new HashSet<>();
+		for (ServerLevel level : server.getAllLevels()) {
+			for (ServerPlayer player : level.players()) {
+				if (!player.isAlive() || player.isSpectator()) {
+					continue;
+				}
+
+				UUID playerId = player.getUUID();
+				activePlayers.add(playerId);
+				long gameTime = level.getGameTime();
+				PlayerLingerState state = PLAYER_LINGER_STATES.get(playerId);
+				if (state == null
+						|| !state.dimension().equals(level.dimension())
+						|| state.distanceToSqr(player) > resetDistanceSqr) {
+					PLAYER_LINGER_STATES.put(playerId, PlayerLingerState.from(level, player, gameTime));
+				}
+			}
+		}
+		PLAYER_LINGER_STATES.keySet().retainAll(activePlayers);
+	}
+
+	private static double playerLingerPressureMultiplier(ServerLevel level, Mob mob, SimulationBreachConfig config) {
+		if (!config.enablePlayerLingerOutbreakPressure() || PLAYER_LINGER_STATES.isEmpty()) {
+			return 1.0D;
+		}
+
+		long gameTime = level.getGameTime();
+		double pressureRadiusSqr = config.playerLingerPressureRadius() * config.playerLingerPressureRadius();
+		double bestMultiplier = 1.0D;
+		for (PlayerLingerState state : PLAYER_LINGER_STATES.values()) {
+			if (!state.dimension().equals(level.dimension()) || state.distanceToSqr(mob) > pressureRadiusSqr) {
+				continue;
+			}
+			bestMultiplier = Math.max(bestMultiplier, state.pressureMultiplier(gameTime, config));
+		}
+		return bestMultiplier;
+	}
+
 	private static OutbreakDifficulty difficultyFor(MinecraftServer server, ServerLevel level) {
 		if (server.isHardcore()) {
 			return OutbreakDifficulty.HARDCORE;
@@ -153,7 +217,8 @@ public final class OutbreakManager {
 			ServerLevel level,
 			Entity entity,
 			OutbreakDifficulty difficulty,
-			SimulationBreachConfig config
+			SimulationBreachConfig config,
+			double pressureMultiplier
 	) {
 		if (!config.debugLogging()) {
 			return;
@@ -161,13 +226,50 @@ public final class OutbreakManager {
 
 		Identifier entityTypeId = EntityType.getKey(entity.getType());
 		SimulationBreach.LOGGER.info(
-				"Initial outbreak candidate selected: entityType={}, dimension={}, position={}, difficulty={}, chance={}",
+				"Initial outbreak candidate selected: entityType={}, dimension={}, position={}, difficulty={}, chance={}, pressureMultiplier={}",
 				entityTypeId,
 				level.dimension().identifier(),
 				entity.blockPosition(),
 				difficulty,
-				InfectionRules.initialPassiveAgentChance(config, difficulty)
+				InfectionRules.initialPassiveAgentChance(config, difficulty, pressureMultiplier),
+				pressureMultiplier
 		);
+	}
+
+	private record PlayerLingerState(
+			ResourceKey<Level> dimension,
+			double anchorX,
+			double anchorY,
+			double anchorZ,
+			long anchorGameTime
+	) {
+		static PlayerLingerState from(ServerLevel level, ServerPlayer player, long gameTime) {
+			return new PlayerLingerState(
+					level.dimension(),
+					player.getX(),
+					player.getY(),
+					player.getZ(),
+					gameTime
+			);
+		}
+
+		double distanceToSqr(Entity entity) {
+			double dx = entity.getX() - anchorX;
+			double dy = entity.getY() - anchorY;
+			double dz = entity.getZ() - anchorZ;
+			return dx * dx + dy * dy + dz * dz;
+		}
+
+		double pressureMultiplier(long gameTime, SimulationBreachConfig config) {
+			long lingerTicks = Math.max(0L, gameTime - anchorGameTime);
+			if (lingerTicks <= config.playerLingerPressureGraceTicks()) {
+				return 1.0D;
+			}
+
+			double rampTicks = Math.max(1.0D, config.playerLingerPressureRampTicks());
+			double progress = Math.min(1.0D, (lingerTicks - config.playerLingerPressureGraceTicks()) / rampTicks);
+			return 1.0D + ((config.maxPlayerLingerPressureMultiplier() - 1.0D) * progress);
+		}
 	}
 
 	private record OutbreakCheckResult(
@@ -175,10 +277,11 @@ public final class OutbreakManager {
 			int entitiesScanned,
 			int eligibleEntitiesFound,
 			int chanceRolls,
-			int candidateSelections
+			int candidateSelections,
+			int lingerPressureRolls
 	) {
 		static OutbreakCheckResult empty() {
-			return new OutbreakCheckResult(0, 0, 0, 0, 0);
+			return new OutbreakCheckResult(0, 0, 0, 0, 0, 0);
 		}
 
 		OutbreakCheckResult plus(OutbreakCheckResult other) {
@@ -187,7 +290,8 @@ public final class OutbreakManager {
 					entitiesScanned + other.entitiesScanned,
 					eligibleEntitiesFound + other.eligibleEntitiesFound,
 					chanceRolls + other.chanceRolls,
-					candidateSelections + other.candidateSelections
+					candidateSelections + other.candidateSelections,
+					lingerPressureRolls + other.lingerPressureRolls
 			);
 		}
 	}

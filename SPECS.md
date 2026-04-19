@@ -57,7 +57,7 @@ Default exclusions:
 
 Initial outbreak eligibility must also be player-adjacent. A mob should only be eligible for natural conversion when it is within the configured distance of a non-spectator player and, by default, has a reasonable navigable route to that player. A mob sealed in an unreachable cave, pen, or room near a player should not naturally transform just because it is close by. Java implementations should use server-side mob navigation or pathfinding where practical. Bedrock implementations may approximate this with Script API path checks, line-of-sight plus navigation heuristics, or conservative exclusion rules when exact pathfinding is unavailable.
 
-The initial conversion chance must be low enough that a world does not collapse immediately. The base default chance is `0.00005` per eligible outbreak check before difficulty scaling. The implementation must define the check cadence clearly in code and config documentation.
+The initial conversion chance must be low enough that a world does not collapse immediately, but high enough that normal play can reveal the mechanic without multi-day waiting. The base default chance is `0.001` per eligible outbreak check before difficulty scaling. The implementation must define the check cadence clearly in code and config documentation.
 
 Initial outbreak chance must scale by world difficulty:
 
@@ -69,7 +69,11 @@ Initial outbreak chance must scale by world difficulty:
 
 Difficulty scaling must be configurable. Bedrock implementations that cannot distinguish Hardcore from Hard should use the Hard multiplier unless the platform exposes a separate Hardcore flag.
 
+When a natural random outbreak completes and produces an Agent, the game should send a configurable system-style chat notice. The notice should read like a computer alert, for example: `[SIMULATION BREACH] BREACH DETECTED :: ASSIGNING AGENT`. It should only be sent for natural random outbreaks, not for Agent-driven conversions or operator debug commands.
+
 Player actions should create local outbreak pressure instead of the world relying only on passive random checks. These pressure events must be specific, local, time-limited, and configurable. They increase the chance that eligible nearby mobs transform into The Agent, but they must not bypass player-adjacency, reachability, immunity, caps, or delayed transformation requirements.
+
+Players lingering in one area should also create gradual local outbreak pressure. This pressure must be configurable, bounded by a maximum multiplier, and reset when the player moves outside the configured area or leaves the dimension. Linger pressure increases the natural outbreak chance for eligible mobs near that area, but it must not bypass player-adjacency, reachability, immunity, caps, or delayed transformation requirements.
 
 Version 1 player action pressure should prioritize actions that affect villagers and villages:
 
@@ -93,11 +97,15 @@ When The Agent lands a melee hit:
 
 The corrupted hostile result may be a vanilla hostile mob such as zombie, skeleton, husk, or stray. Version 1 may use vanilla hostile mobs. Later versions may add custom corrupted variants for clearer visuals and better control.
 
+Until the corrupted-hostile replacement path is implemented, version 1 Java builds may route Agent mob-conversion attempts through the delayed Agent transformation path so spread behavior remains testable. This fallback must still use the configured chances, local caps, delayed transformation, and player counterplay rules.
+
 ### 3.3 Agent Targeting and Movement
 
 Agents must prioritize nearby players as their primary combat targets. When an Agent identifies a nearby player, it should move toward that player and attack using ordinary hostile-mob combat behavior.
 
 Agents may briefly deviate from their path to attempt mob conversion, but the deviation must not make mob conversion look like the primary goal when a player is available. Conversion detours should be short, bounded, and configurable.
+
+When an Agent is close enough to eligible non-player mobs during a conversion pass, it should attempt every eligible mob within its configured detour radius rather than choosing one random target. The chance for each attempt should be high by default, especially for mobs that are already hostile or corrupted. These conversion sweeps must be cooldown-limited and must respect local Agent caps.
 
 If no player target is available, Agents may pursue eligible conversion targets according to the normal conversion rules and local caps.
 
@@ -149,16 +157,19 @@ Conversion must not be instant. A mob that is being corrupted or converted into 
 
 Version 1 transformation behavior:
 
-- Duration must be configurable and expected to test in the range of 20 to 100 ticks, or about 1 to 5 seconds.
-- Default duration should start at 60 ticks, or about 3 seconds, until gameplay testing suggests a better value.
+- Duration must be configurable and expected to test in the range of 120 to 200 ticks, or about 6 to 10 seconds.
+- Default duration should start at 180 ticks, or about 9 seconds, until gameplay testing suggests a better value.
 - The transforming mob should shake in a manner similar to a Creeper swelling before it explodes.
-- The transforming mob should play an audible cue.
-- Version 1 may reuse the Creeper priming sound as a placeholder.
-- A later version should replace the placeholder with an original Simulation Breach transformation sound effect.
+- The transforming mob should play the original Simulation Breach Agent transformation sound.
+- Version 1 may retain the Creeper priming sound as an optional fallback while audio assets are iterated.
 
 Transformation state must be server-authoritative. If a transforming entity unloads, dies, or becomes invalid before completion, the implementation must either persist and resume the pending transformation or cancel it safely without duplicating entities.
 
 If a player sees a mob transforming and kills it before the transformation completes, the transformation must fail and The Agent must not spawn. This is required gameplay counterplay, not an optional balance detail.
+
+### 3.7 Agent Rewards
+
+Killing an Agent should provide enough experience to feel proportionate to the combat risk and outbreak-control value. The reward must be configurable. The Java default should start above ordinary zombies and similar common hostiles because Agents have higher health, pursue players, and can convert nearby mobs while chasing.
 
 ## 4. Entity Identity Data
 
@@ -198,26 +209,34 @@ Default values:
 
 | Key | Default | Meaning |
 | --- | ---: | --- |
-| `initialPassiveAgentChance` | `0.00005` | Base chance for an eligible non-hostile mob to become The Agent during an outbreak check before difficulty scaling. |
+| `initialPassiveAgentChance` | `0.001` | Base chance for an eligible non-hostile mob to become The Agent during an outbreak check before difficulty scaling. |
 | `peacefulInitialAgentChanceMultiplier` | `0.10` | Multiplier for initial outbreaks in Peaceful worlds. |
 | `easyInitialAgentChanceMultiplier` | `0.50` | Multiplier for initial outbreaks in Easy worlds. |
 | `normalInitialAgentChanceMultiplier` | `1.00` | Baseline multiplier for initial outbreaks in Normal worlds. |
 | `hardInitialAgentChanceMultiplier` | `2.00` | Multiplier for initial outbreaks in Hard worlds. |
 | `hardcoreInitialAgentChanceMultiplier` | `3.00` | Multiplier for initial outbreaks in Hardcore worlds where available. |
 | `agentConvertPassiveChance` | `1.0` | Chance that an Agent melee hit corrupts a non-hostile mob. |
-| `agentConvertHostileToAgentChance` | `0.35` | Chance that an Agent melee hit converts an originally hostile mob into The Agent. |
-| `agentConvertCorruptedPassiveToAgentChance` | `0.20` | Chance that an Agent melee hit promotes a corrupted passive-origin mob when promotion is enabled. |
-| `agentConversionCooldownTicks` | `40` | Minimum ticks between conversion attempts per Agent on Java. Bedrock may represent this in ticks or seconds. |
-| `transformationDurationTicks` | `60` | Time from conversion trigger to replacement. Expected tuning range is 20 to 100 ticks. |
+| `agentConvertHostileToAgentChance` | `0.75` | Chance that an Agent melee hit converts an originally hostile mob into The Agent. |
+| `agentConvertCorruptedPassiveToAgentChance` | `0.75` | Chance that an Agent melee hit promotes a corrupted passive-origin mob when promotion is enabled. |
+| `agentConversionCooldownTicks` | `20` | Minimum ticks between conversion sweeps per Agent on Java. Bedrock may represent this in ticks or seconds. |
+| `transformationDurationTicks` | `180` | Time from conversion trigger to replacement. Expected tuning range is 120 to 200 ticks. |
+| `agentExperienceReward` | `12` | Base XP reward for killing an Agent. |
 | `agentConversionDetourRadius` | `4` | Maximum short detour radius for converting mobs while pursuing a player. |
-| `maxAgentsPerChunk` | `3` | Soft cap for Agents in a local area. Bedrock may approximate by chunk-equivalent region. |
+| `maxAgentsPerChunk` | `8` | Soft cap for Agents in a local area. Bedrock may approximate by chunk-equivalent region. |
 | `enableInitialOutbreaks` | `true` | Whether rare natural initial Agent outbreaks are enabled. |
 | `outbreakCheckIntervalTicks` | `200` | Server ticks between scheduled initial outbreak checks. |
-| `outbreakScanLimitPerLevel` | `256` | Maximum loaded entities inspected per level during one scheduled outbreak check. |
-| `outbreakEligibleRollsPerLevel` | `16` | Maximum eligible non-hostile mobs rolled per level during one scheduled outbreak check. |
-| `initialOutbreakPlayerSearchRadius` | `32.0` | Maximum distance from an eligible mob to a non-spectator player for natural outbreak checks. |
+| `outbreakScanLimitPerLevel` | `768` | Maximum loaded entities inspected per level during one scheduled outbreak check. |
+| `outbreakEligibleRollsPerLevel` | `64` | Maximum eligible non-hostile mobs rolled per level during one scheduled outbreak check. |
+| `initialOutbreakPlayerSearchRadius` | `48.0` | Maximum distance from an eligible mob to a non-spectator player for natural outbreak checks. |
 | `initialOutbreakRequiresReachablePlayer` | `true` | Whether natural outbreak candidates must have a navigable route to a nearby player. |
-| `enablePlaceholderCreeperTransformSound` | `true` | Whether version 1 transformations use the Creeper priming sound until an original sound is available. |
+| `enableAgentTransformSound` | `true` | Whether transformations play the original Simulation Breach Agent transformation sound. |
+| `enablePlaceholderCreeperTransformSound` | `true` | Whether transformations use the Creeper priming sound when the original Agent sound is disabled. |
+| `enablePlayerLingerOutbreakPressure` | `true` | Whether lingering in one area gradually increases local natural outbreak chance. |
+| `playerLingerPressureRadius` | `48.0` | Radius around a player's linger anchor where local pressure applies, and movement distance that resets the anchor. |
+| `playerLingerPressureGraceTicks` | `1200` | Ticks a player can remain in one area before linger pressure starts increasing. |
+| `playerLingerPressureRampTicks` | `4800` | Ticks after the grace period required to reach the maximum linger pressure multiplier. |
+| `maxPlayerLingerPressureMultiplier` | `4.0` | Maximum multiplier applied to natural outbreak chance from player linger pressure. |
+| `enableNaturalOutbreakChatNotice` | `true` | Whether completed natural random Agent outbreaks send a computer-styled chat notice. |
 | `passivePromotionMode` | `PROMOTED_CORRUPTION` | Rule for passive-origin corrupted mobs. |
 | `excludeVillagers` | `false` | Whether villagers are immune from initial and passive conversion. |
 | `excludeTamedAnimals` | `true` | Whether owned tamed animals are immune. |
@@ -243,12 +262,15 @@ Additional recommended config:
 - `genericBlockChangePressureMultiplier`
 - `maxPlayerActionPressureMultiplier`
 
+Version 1 Java must provide an operator-only debug command for forcing a nearby mob into Agent transformation, such as `/simulationbreach transform_nearest [radius]`, so transformation presentation and replacement can be tested deterministically.
+
 Config validation:
 
 - Chances must be clamped to `0.0` through `1.0`.
 - Difficulty multipliers must be non-negative and ordered so Peaceful is the lowest and Hardcore is the highest when Hardcore is available.
 - Cooldowns and intervals must be positive.
 - Player search radii and pressure radii must be positive.
+- Linger pressure grace ticks must be non-negative, ramp ticks must be positive, and the maximum multiplier must be at least `1.0`.
 - Transformation duration must be positive.
 - Caps must allow `0` to disable spread where useful.
 - Invalid entity identifiers must be logged and ignored.
@@ -299,6 +321,8 @@ Metrics to log during development:
 - Eligible mobs rejected because no nearby reachable player exists.
 - Natural conversions.
 - Player action pressure events by type.
+- Active player linger pressure records.
+- Natural outbreak rolls affected by player linger pressure.
 - Active player action pressure records.
 - Melee conversion attempts.
 - Successful conversions by target type.
@@ -378,12 +402,12 @@ Required version 1 asset planning:
 
 - Agent skin or texture.
 - Placeholder humanoid Agent model if a custom model is not ready.
+- Agent ambient voice sound.
 - Transformation visual treatment driven by shaking and optional particles.
-- Placeholder Creeper priming sound for transformation.
+- Original transformation sound with optional Creeper fallback.
 
 Later asset goals:
 
-- Original Simulation Breach transformation sound.
 - Final Agent texture or model.
 - Corrupted mob visual treatment.
 - Transformation particles or shader-like effects that remain readable in normal survival play.
@@ -399,7 +423,10 @@ The Agent skin and the transformation presentation should be designed separately
 - Difficulty-scaled initial outbreak chance.
 - Player-priority Agent targeting with bounded conversion detours.
 - Delayed shaking transformation before replacement.
-- Placeholder Creeper priming sound for transformation.
+- Original Agent transformation sound with optional Creeper fallback.
+- Agent ambient voice sound.
+- Computer-styled chat notice when a natural random outbreak creates an Agent.
+- Gradual local natural outbreak pressure when players linger in one area.
 - Placeholder Agent skin or texture.
 - Corrupted hostile intermediate state using vanilla hostile mobs.
 - Persistent origin and infection data.
@@ -412,7 +439,7 @@ The Agent skin and the transformation presentation should be designed separately
 
 - Custom corrupted mob variants.
 - Stronger visuals and audio.
-- Original Simulation Breach transformation sound.
+- Additional transformation and corrupted-mob audio.
 - Final Agent skin or model.
 - Optional config screen.
 - More granular entity allowlists and denylists.

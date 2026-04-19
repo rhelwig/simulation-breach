@@ -1,5 +1,6 @@
 package com.ronhelwig.simulationbreach;
 
+import com.ronhelwig.simulationbreach.command.ModCommands;
 import com.ronhelwig.simulationbreach.config.SimulationBreachConfig;
 import com.ronhelwig.simulationbreach.config.SimulationBreachConfigLoader;
 import com.ronhelwig.simulationbreach.entity.ModEntities;
@@ -7,6 +8,7 @@ import com.ronhelwig.simulationbreach.gameplay.InfectionRules;
 import com.ronhelwig.simulationbreach.gameplay.OutbreakDifficulty;
 import com.ronhelwig.simulationbreach.network.ModNetworking;
 import com.ronhelwig.simulationbreach.outbreak.OutbreakManager;
+import com.ronhelwig.simulationbreach.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -31,6 +33,8 @@ public class SimulationBreach implements ModInitializer {
 		CONFIG = SimulationBreachConfigLoader.load(MOD_ID, LOGGER);
 		ModNetworking.registerPayloads();
 		ModEntities.register();
+		ModSounds.register();
+		ModCommands.register();
 		OutbreakManager.register();
 		LOGGER.info(
 				"Loaded Simulation Breach config: normal initial Agent chance={}, transformation duration={} ticks, outbreak interval={} ticks",

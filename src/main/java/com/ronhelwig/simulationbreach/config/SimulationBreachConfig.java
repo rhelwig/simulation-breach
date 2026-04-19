@@ -1,26 +1,34 @@
 package com.ronhelwig.simulationbreach.config;
 
 public final class SimulationBreachConfig {
-	public static final double DEFAULT_INITIAL_PASSIVE_AGENT_CHANCE = 0.00005D;
+	public static final double DEFAULT_INITIAL_PASSIVE_AGENT_CHANCE = 0.001D;
 	public static final double DEFAULT_PEACEFUL_INITIAL_AGENT_CHANCE_MULTIPLIER = 0.10D;
 	public static final double DEFAULT_EASY_INITIAL_AGENT_CHANCE_MULTIPLIER = 0.50D;
 	public static final double DEFAULT_NORMAL_INITIAL_AGENT_CHANCE_MULTIPLIER = 1.00D;
 	public static final double DEFAULT_HARD_INITIAL_AGENT_CHANCE_MULTIPLIER = 2.00D;
 	public static final double DEFAULT_HARDCORE_INITIAL_AGENT_CHANCE_MULTIPLIER = 3.00D;
 	public static final double DEFAULT_AGENT_CONVERT_PASSIVE_CHANCE = 1.0D;
-	public static final double DEFAULT_AGENT_CONVERT_HOSTILE_TO_AGENT_CHANCE = 0.35D;
-	public static final double DEFAULT_AGENT_CONVERT_CORRUPTED_PASSIVE_TO_AGENT_CHANCE = 0.20D;
-	public static final int DEFAULT_AGENT_CONVERSION_COOLDOWN_TICKS = 40;
-	public static final int DEFAULT_TRANSFORMATION_DURATION_TICKS = 60;
+	public static final double DEFAULT_AGENT_CONVERT_HOSTILE_TO_AGENT_CHANCE = 0.75D;
+	public static final double DEFAULT_AGENT_CONVERT_CORRUPTED_PASSIVE_TO_AGENT_CHANCE = 0.75D;
+	public static final int DEFAULT_AGENT_CONVERSION_COOLDOWN_TICKS = 20;
+	public static final int DEFAULT_TRANSFORMATION_DURATION_TICKS = 180;
+	public static final int DEFAULT_AGENT_EXPERIENCE_REWARD = 12;
 	public static final int DEFAULT_AGENT_CONVERSION_DETOUR_RADIUS = 4;
-	public static final int DEFAULT_MAX_AGENTS_PER_CHUNK = 3;
+	public static final int DEFAULT_MAX_AGENTS_PER_CHUNK = 8;
 	public static final boolean DEFAULT_ENABLE_INITIAL_OUTBREAKS = true;
 	public static final int DEFAULT_OUTBREAK_CHECK_INTERVAL_TICKS = 200;
-	public static final int DEFAULT_OUTBREAK_SCAN_LIMIT_PER_LEVEL = 256;
-	public static final int DEFAULT_OUTBREAK_ELIGIBLE_ROLLS_PER_LEVEL = 16;
-	public static final double DEFAULT_INITIAL_OUTBREAK_PLAYER_SEARCH_RADIUS = 32.0D;
+	public static final int DEFAULT_OUTBREAK_SCAN_LIMIT_PER_LEVEL = 768;
+	public static final int DEFAULT_OUTBREAK_ELIGIBLE_ROLLS_PER_LEVEL = 64;
+	public static final double DEFAULT_INITIAL_OUTBREAK_PLAYER_SEARCH_RADIUS = 48.0D;
 	public static final boolean DEFAULT_INITIAL_OUTBREAK_REQUIRES_REACHABLE_PLAYER = true;
+	public static final boolean DEFAULT_ENABLE_AGENT_TRANSFORM_SOUND = true;
 	public static final boolean DEFAULT_ENABLE_PLACEHOLDER_CREEPER_TRANSFORM_SOUND = true;
+	public static final boolean DEFAULT_ENABLE_PLAYER_LINGER_OUTBREAK_PRESSURE = true;
+	public static final double DEFAULT_PLAYER_LINGER_PRESSURE_RADIUS = 48.0D;
+	public static final int DEFAULT_PLAYER_LINGER_PRESSURE_GRACE_TICKS = 1200;
+	public static final int DEFAULT_PLAYER_LINGER_PRESSURE_RAMP_TICKS = 4800;
+	public static final double DEFAULT_MAX_PLAYER_LINGER_PRESSURE_MULTIPLIER = 4.0D;
+	public static final boolean DEFAULT_ENABLE_NATURAL_OUTBREAK_CHAT_NOTICE = true;
 	public static final PassivePromotionMode DEFAULT_PASSIVE_PROMOTION_MODE = PassivePromotionMode.PROMOTED_CORRUPTION;
 	public static final boolean DEFAULT_EXCLUDE_VILLAGERS = false;
 	public static final boolean DEFAULT_EXCLUDE_TAMED_ANIMALS = true;
@@ -37,6 +45,7 @@ public final class SimulationBreachConfig {
 	private final double agentConvertCorruptedPassiveToAgentChance;
 	private final int agentConversionCooldownTicks;
 	private final int transformationDurationTicks;
+	private final int agentExperienceReward;
 	private final int agentConversionDetourRadius;
 	private final int maxAgentsPerChunk;
 	private final boolean enableInitialOutbreaks;
@@ -45,7 +54,14 @@ public final class SimulationBreachConfig {
 	private final int outbreakEligibleRollsPerLevel;
 	private final double initialOutbreakPlayerSearchRadius;
 	private final boolean initialOutbreakRequiresReachablePlayer;
+	private final boolean enableAgentTransformSound;
 	private final boolean enablePlaceholderCreeperTransformSound;
+	private final boolean enablePlayerLingerOutbreakPressure;
+	private final double playerLingerPressureRadius;
+	private final int playerLingerPressureGraceTicks;
+	private final int playerLingerPressureRampTicks;
+	private final double maxPlayerLingerPressureMultiplier;
+	private final boolean enableNaturalOutbreakChatNotice;
 	private final PassivePromotionMode passivePromotionMode;
 	private final boolean excludeVillagers;
 	private final boolean excludeTamedAnimals;
@@ -63,6 +79,7 @@ public final class SimulationBreachConfig {
 		this.agentConvertCorruptedPassiveToAgentChance = builder.agentConvertCorruptedPassiveToAgentChance;
 		this.agentConversionCooldownTicks = builder.agentConversionCooldownTicks;
 		this.transformationDurationTicks = builder.transformationDurationTicks;
+		this.agentExperienceReward = builder.agentExperienceReward;
 		this.agentConversionDetourRadius = builder.agentConversionDetourRadius;
 		this.maxAgentsPerChunk = builder.maxAgentsPerChunk;
 		this.enableInitialOutbreaks = builder.enableInitialOutbreaks;
@@ -71,7 +88,14 @@ public final class SimulationBreachConfig {
 		this.outbreakEligibleRollsPerLevel = builder.outbreakEligibleRollsPerLevel;
 		this.initialOutbreakPlayerSearchRadius = builder.initialOutbreakPlayerSearchRadius;
 		this.initialOutbreakRequiresReachablePlayer = builder.initialOutbreakRequiresReachablePlayer;
+		this.enableAgentTransformSound = builder.enableAgentTransformSound;
 		this.enablePlaceholderCreeperTransformSound = builder.enablePlaceholderCreeperTransformSound;
+		this.enablePlayerLingerOutbreakPressure = builder.enablePlayerLingerOutbreakPressure;
+		this.playerLingerPressureRadius = builder.playerLingerPressureRadius;
+		this.playerLingerPressureGraceTicks = builder.playerLingerPressureGraceTicks;
+		this.playerLingerPressureRampTicks = builder.playerLingerPressureRampTicks;
+		this.maxPlayerLingerPressureMultiplier = builder.maxPlayerLingerPressureMultiplier;
+		this.enableNaturalOutbreakChatNotice = builder.enableNaturalOutbreakChatNotice;
 		this.passivePromotionMode = builder.passivePromotionMode;
 		this.excludeVillagers = builder.excludeVillagers;
 		this.excludeTamedAnimals = builder.excludeTamedAnimals;
@@ -132,6 +156,10 @@ public final class SimulationBreachConfig {
 		return transformationDurationTicks;
 	}
 
+	public int agentExperienceReward() {
+		return agentExperienceReward;
+	}
+
 	public int agentConversionDetourRadius() {
 		return agentConversionDetourRadius;
 	}
@@ -164,8 +192,36 @@ public final class SimulationBreachConfig {
 		return initialOutbreakRequiresReachablePlayer;
 	}
 
+	public boolean enableAgentTransformSound() {
+		return enableAgentTransformSound;
+	}
+
 	public boolean enablePlaceholderCreeperTransformSound() {
 		return enablePlaceholderCreeperTransformSound;
+	}
+
+	public boolean enablePlayerLingerOutbreakPressure() {
+		return enablePlayerLingerOutbreakPressure;
+	}
+
+	public double playerLingerPressureRadius() {
+		return playerLingerPressureRadius;
+	}
+
+	public int playerLingerPressureGraceTicks() {
+		return playerLingerPressureGraceTicks;
+	}
+
+	public int playerLingerPressureRampTicks() {
+		return playerLingerPressureRampTicks;
+	}
+
+	public double maxPlayerLingerPressureMultiplier() {
+		return maxPlayerLingerPressureMultiplier;
+	}
+
+	public boolean enableNaturalOutbreakChatNotice() {
+		return enableNaturalOutbreakChatNotice;
 	}
 
 	public PassivePromotionMode passivePromotionMode() {
@@ -196,12 +252,17 @@ public final class SimulationBreachConfig {
 		validateNonNegative("hardcoreInitialAgentChanceMultiplier", hardcoreInitialAgentChanceMultiplier);
 		validatePositive("agentConversionCooldownTicks", agentConversionCooldownTicks);
 		validatePositive("transformationDurationTicks", transformationDurationTicks);
+		validateNonNegative("agentExperienceReward", agentExperienceReward);
 		validateNonNegative("agentConversionDetourRadius", agentConversionDetourRadius);
 		validateNonNegative("maxAgentsPerChunk", maxAgentsPerChunk);
 		validatePositive("outbreakCheckIntervalTicks", outbreakCheckIntervalTicks);
 		validatePositive("outbreakScanLimitPerLevel", outbreakScanLimitPerLevel);
 		validatePositive("outbreakEligibleRollsPerLevel", outbreakEligibleRollsPerLevel);
 		validatePositive("initialOutbreakPlayerSearchRadius", initialOutbreakPlayerSearchRadius);
+		validatePositive("playerLingerPressureRadius", playerLingerPressureRadius);
+		validateNonNegative("playerLingerPressureGraceTicks", playerLingerPressureGraceTicks);
+		validatePositive("playerLingerPressureRampTicks", playerLingerPressureRampTicks);
+		validateAtLeastOne("maxPlayerLingerPressureMultiplier", maxPlayerLingerPressureMultiplier);
 
 		if (passivePromotionMode == null) {
 			throw new IllegalArgumentException("passivePromotionMode must not be null");
@@ -245,6 +306,12 @@ public final class SimulationBreachConfig {
 		}
 	}
 
+	private static void validateAtLeastOne(String name, double value) {
+		if (value < 1.0D) {
+			throw new IllegalArgumentException(name + " must be at least 1.0");
+		}
+	}
+
 	public static final class Builder {
 		private double initialPassiveAgentChance = DEFAULT_INITIAL_PASSIVE_AGENT_CHANCE;
 		private double peacefulInitialAgentChanceMultiplier = DEFAULT_PEACEFUL_INITIAL_AGENT_CHANCE_MULTIPLIER;
@@ -257,6 +324,7 @@ public final class SimulationBreachConfig {
 		private double agentConvertCorruptedPassiveToAgentChance = DEFAULT_AGENT_CONVERT_CORRUPTED_PASSIVE_TO_AGENT_CHANCE;
 		private int agentConversionCooldownTicks = DEFAULT_AGENT_CONVERSION_COOLDOWN_TICKS;
 		private int transformationDurationTicks = DEFAULT_TRANSFORMATION_DURATION_TICKS;
+		private int agentExperienceReward = DEFAULT_AGENT_EXPERIENCE_REWARD;
 		private int agentConversionDetourRadius = DEFAULT_AGENT_CONVERSION_DETOUR_RADIUS;
 		private int maxAgentsPerChunk = DEFAULT_MAX_AGENTS_PER_CHUNK;
 		private boolean enableInitialOutbreaks = DEFAULT_ENABLE_INITIAL_OUTBREAKS;
@@ -265,7 +333,14 @@ public final class SimulationBreachConfig {
 		private int outbreakEligibleRollsPerLevel = DEFAULT_OUTBREAK_ELIGIBLE_ROLLS_PER_LEVEL;
 		private double initialOutbreakPlayerSearchRadius = DEFAULT_INITIAL_OUTBREAK_PLAYER_SEARCH_RADIUS;
 		private boolean initialOutbreakRequiresReachablePlayer = DEFAULT_INITIAL_OUTBREAK_REQUIRES_REACHABLE_PLAYER;
+		private boolean enableAgentTransformSound = DEFAULT_ENABLE_AGENT_TRANSFORM_SOUND;
 		private boolean enablePlaceholderCreeperTransformSound = DEFAULT_ENABLE_PLACEHOLDER_CREEPER_TRANSFORM_SOUND;
+		private boolean enablePlayerLingerOutbreakPressure = DEFAULT_ENABLE_PLAYER_LINGER_OUTBREAK_PRESSURE;
+		private double playerLingerPressureRadius = DEFAULT_PLAYER_LINGER_PRESSURE_RADIUS;
+		private int playerLingerPressureGraceTicks = DEFAULT_PLAYER_LINGER_PRESSURE_GRACE_TICKS;
+		private int playerLingerPressureRampTicks = DEFAULT_PLAYER_LINGER_PRESSURE_RAMP_TICKS;
+		private double maxPlayerLingerPressureMultiplier = DEFAULT_MAX_PLAYER_LINGER_PRESSURE_MULTIPLIER;
+		private boolean enableNaturalOutbreakChatNotice = DEFAULT_ENABLE_NATURAL_OUTBREAK_CHAT_NOTICE;
 		private PassivePromotionMode passivePromotionMode = DEFAULT_PASSIVE_PROMOTION_MODE;
 		private boolean excludeVillagers = DEFAULT_EXCLUDE_VILLAGERS;
 		private boolean excludeTamedAnimals = DEFAULT_EXCLUDE_TAMED_ANIMALS;
@@ -329,6 +404,11 @@ public final class SimulationBreachConfig {
 			return this;
 		}
 
+		public Builder agentExperienceReward(int agentExperienceReward) {
+			this.agentExperienceReward = agentExperienceReward;
+			return this;
+		}
+
 		public Builder agentConversionDetourRadius(int agentConversionDetourRadius) {
 			this.agentConversionDetourRadius = agentConversionDetourRadius;
 			return this;
@@ -369,8 +449,43 @@ public final class SimulationBreachConfig {
 			return this;
 		}
 
+		public Builder enableAgentTransformSound(boolean enableAgentTransformSound) {
+			this.enableAgentTransformSound = enableAgentTransformSound;
+			return this;
+		}
+
 		public Builder enablePlaceholderCreeperTransformSound(boolean enablePlaceholderCreeperTransformSound) {
 			this.enablePlaceholderCreeperTransformSound = enablePlaceholderCreeperTransformSound;
+			return this;
+		}
+
+		public Builder enablePlayerLingerOutbreakPressure(boolean enablePlayerLingerOutbreakPressure) {
+			this.enablePlayerLingerOutbreakPressure = enablePlayerLingerOutbreakPressure;
+			return this;
+		}
+
+		public Builder playerLingerPressureRadius(double playerLingerPressureRadius) {
+			this.playerLingerPressureRadius = playerLingerPressureRadius;
+			return this;
+		}
+
+		public Builder playerLingerPressureGraceTicks(int playerLingerPressureGraceTicks) {
+			this.playerLingerPressureGraceTicks = playerLingerPressureGraceTicks;
+			return this;
+		}
+
+		public Builder playerLingerPressureRampTicks(int playerLingerPressureRampTicks) {
+			this.playerLingerPressureRampTicks = playerLingerPressureRampTicks;
+			return this;
+		}
+
+		public Builder maxPlayerLingerPressureMultiplier(double maxPlayerLingerPressureMultiplier) {
+			this.maxPlayerLingerPressureMultiplier = maxPlayerLingerPressureMultiplier;
+			return this;
+		}
+
+		public Builder enableNaturalOutbreakChatNotice(boolean enableNaturalOutbreakChatNotice) {
+			this.enableNaturalOutbreakChatNotice = enableNaturalOutbreakChatNotice;
 			return this;
 		}
 

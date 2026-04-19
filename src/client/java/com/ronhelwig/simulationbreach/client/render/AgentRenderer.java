@@ -1,6 +1,8 @@
 package com.ronhelwig.simulationbreach.client.render;
 
+import com.ronhelwig.simulationbreach.SimulationBreach;
 import com.ronhelwig.simulationbreach.entity.AgentEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -9,6 +11,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public class AgentRenderer extends HumanoidMobRenderer<AgentEntity, AgentRenderState, HumanoidModel<AgentRenderState>> {
+	private static final Identifier AGENT_TEXTURE = Identifier.fromNamespaceAndPath(
+			SimulationBreach.MOD_ID,
+			"textures/entity/agent/agent.png"
+	);
 	private static final Identifier PLACEHOLDER_TEXTURE = Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png");
 	private static final int BASE_TINT = 0xFF102A28;
 	private static final int PULSE_TINT = 0xFF6EFFF0;
@@ -30,12 +36,19 @@ public class AgentRenderer extends HumanoidMobRenderer<AgentEntity, AgentRenderS
 
 	@Override
 	public Identifier getTextureLocation(AgentRenderState renderState) {
-		return PLACEHOLDER_TEXTURE;
+		return hasAgentTexture() ? AGENT_TEXTURE : PLACEHOLDER_TEXTURE;
 	}
 
 	@Override
 	protected int getModelTint(AgentRenderState renderState) {
+		if (hasAgentTexture()) {
+			return -1;
+		}
 		return blendArgb(BASE_TINT, PULSE_TINT, renderState.breachPulse * 0.45F);
+	}
+
+	private static boolean hasAgentTexture() {
+		return Minecraft.getInstance().getResourceManager().getResource(AGENT_TEXTURE).isPresent();
 	}
 
 	private static int blendArgb(int from, int to, float amount) {

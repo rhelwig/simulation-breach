@@ -54,6 +54,18 @@
 - 2026-04-18: Packet presentation fix `./gradlew compileJava` completed successfully in 797 ms.
 - 2026-04-18: Packet presentation fix `./gradlew compileClientJava` completed successfully in 867 ms with a deprecation note from Fabric's entity renderer registry API.
 - 2026-04-18: Packet presentation fix `./gradlew runClient` opened world `T1`, logged in player entity id 5, ran gameplay, saved worlds, and exited successfully in 37 minutes 29 seconds.
+- 2026-04-18: Debug command and spread tuning slice `./gradlew compileJava` completed successfully in 865 ms.
+- 2026-04-18: Debug command and spread tuning slice `./gradlew compileClientJava` completed successfully in 739 ms with the existing Fabric renderer deprecation note.
+- 2026-04-18: Debug command and spread tuning slice final `./gradlew compileJava` completed successfully in 769 ms; final `./gradlew compileClientJava` completed successfully in 491 ms with tasks up to date.
+- 2026-04-18: Agent XP and asset guidance slice first `./gradlew compileJava` completed successfully in 810 ms; first `./gradlew compileClientJava` failed in 787 ms on an `Identifier` factory mapping mismatch, then passed in 720 ms after switching to `Identifier.fromNamespaceAndPath`.
+- 2026-04-18: Agent XP and asset guidance slice final `./gradlew compileJava` completed successfully in 502 ms with tasks up to date; final `./gradlew compileClientJava` completed successfully in 517 ms with tasks up to date.
+- 2026-04-19: Transformation sound and linger pressure slice `./gradlew compileJava` completed successfully in 5 seconds.
+- 2026-04-19: Transformation sound and linger pressure slice `./gradlew compileClientJava` completed successfully in 1 second with the existing Fabric renderer deprecation note.
+- 2026-04-19: Transformation sound and linger pressure slice `./gradlew build` completed successfully in 905 ms; jar resource check confirmed `sounds.json` and `transform.ogg` are packaged.
+- 2026-04-19: Post-cleanup rerun `./gradlew compileJava` completed successfully in 824 ms; `./gradlew compileClientJava` completed successfully in 605 ms; `./gradlew build` completed successfully in 667 ms.
+- 2026-04-19: Agent voice and breach notice slice `./gradlew compileJava` completed successfully in 2 seconds.
+- 2026-04-19: Agent voice and breach notice slice `./gradlew compileClientJava` completed successfully in 1 second with the existing Fabric renderer deprecation note.
+- 2026-04-19: Agent voice and breach notice slice `./gradlew build` completed successfully in 673 ms; jar resource check confirmed `voice.ogg` is packaged.
 
 ## 2026-04-18 Agent Terminology and Gameplay Spec Update
 
@@ -176,6 +188,38 @@
 - [x] Verify compile tasks.
 - [x] Verify world `T1` opens, saves, and exits cleanly through `runClient`.
 
+## 2026-04-18 Debug Command and Spread Tuning Slice
+
+- [x] Add spec updates for higher natural outbreak throughput, longer transformations, Agent conversion sweeps, and deterministic debug testing.
+- [x] Add operator-only `/simulationbreach transform_nearest [radius]` command.
+- [x] Make Agents sweep all nearby eligible non-player mobs within the detour radius on a cooldown.
+- [x] Route version 1 Agent spread attempts through delayed Agent transformation until corrupted-hostile conversion exists.
+- [x] Raise transformation duration and spread/outbreak defaults for testability.
+- [x] Compile and record performance.
+
+## 2026-04-18 Agent XP and Asset Guidance Slice
+
+- [x] Add configurable Agent XP reward.
+- [x] Make the Agent renderer use `assets/simulation-breach/textures/entity/agent/agent.png` when present, with the existing zombie placeholder fallback.
+- [x] Document Agent texture and transformation sound asset paths and formats.
+- [x] Update specs for Agent reward tuning.
+- [x] Compile and record performance.
+
+## 2026-04-19 Transformation Sound and Linger Pressure Slice
+
+- [x] Register and play `entity/agent/transform.ogg` for Agent transformations.
+- [x] Stop applying placeholder tint to the authored Agent texture.
+- [x] Add configurable outbreak pressure when players linger in one area.
+- [x] Update specs and docs for the new sound and linger-pressure behavior.
+- [x] Compile and record performance.
+
+## 2026-04-19 Agent Voice and Breach Notice Slice
+
+- [x] Register and play `entity/agent/voice.ogg` as the Agent ambient voice.
+- [x] Add a computer-styled chat notice for natural random Agent assignments.
+- [x] Add config/spec/docs coverage for the natural outbreak notice.
+- [x] Compile, build, and record performance.
+
 ## Implementation Roadmap
 
 - [x] Foundation: config defaults, validation, promotion mode, difficulty model, and pure outbreak chance rules.
@@ -185,13 +229,17 @@
 - [x] Transformation system: add delayed transformation state, Creeper-like shaking progress, completion, and cancellation helpers.
 - [x] Outbreak manager: schedule bounded natural outbreak checks without scanning every entity every tick.
 - [x] Natural outbreak eligibility: require nearby-player context and reachable-route checks before candidate selection.
+- [x] Player linger outbreak pressure: raise local natural outbreak chance when a player remains in one area.
 - [ ] Player action outbreak pressure: raise local natural outbreak chance after specific player actions, especially village and villager changes.
 - [x] Conversion manager: replace entities, transfer breach identity data, prevent duplicate drops/XP, and enforce cooldowns/caps.
 - [x] Interruptible transformations: killing the source before completion prevents Agent spawn.
-- [ ] Agent targeting: prioritize nearby players while allowing short bounded conversion detours.
-- [x] Transformation presentation: synced shake state and placeholder Creeper priming sound.
+- [x] Agent targeting: prioritize nearby players while allowing short bounded conversion detours.
+- [x] Transformation presentation: synced shake state and original Agent transformation sound with Creeper fallback.
+- [x] Agent audio: ambient voice.
+- [ ] Agent audio: additional action sounds.
 - [x] Agent placeholder rendering: distinct tinted humanoid render using vanilla assets.
-- [ ] Client presentation: final renderer, model/texture, particles, original sounds, and any additional synced visual state.
+- [x] Agent reward tuning: configurable XP reward for killing Agents.
+- [ ] Client presentation: final renderer, model/texture, particles, and any additional synced visual state.
 - [ ] Balancing and verification: tune defaults, log performance, add tests or harnesses around pure rule code, and verify in-game behavior.
 
 ## Agent Graphics Notes
