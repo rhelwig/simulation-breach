@@ -46,7 +46,7 @@ Eligible examples:
 - Rabbits
 - Villagers, unless excluded by config
 
-Default exclusions:
+Default natural-outbreak exclusions:
 
 - Players
 - Bosses
@@ -94,6 +94,8 @@ When The Agent lands a melee hit:
 - Target is hostile and originally hostile: convert the target into The Agent with a moderate configurable chance.
 - Target is hostile but originally non-hostile: apply the configured passive-origin promotion rule.
 - Target is a player: attack normally. Player conversion is out of scope for version 1.
+
+Owned tamed animals are protected from random natural outbreak selection by default, but they are not protected from direct Agent spread. If an Agent passes near a tamed animal during its conversion sweep, that animal can still begin the delayed transformation.
 
 The corrupted hostile result may be a vanilla hostile mob such as zombie, skeleton, husk, or stray. Version 1 may use vanilla hostile mobs. Later versions may add custom corrupted variants for clearer visuals and better control.
 
@@ -239,7 +241,7 @@ Default values:
 | `enableNaturalOutbreakChatNotice` | `true` | Whether completed natural random Agent outbreaks send a computer-styled chat notice. |
 | `passivePromotionMode` | `PROMOTED_CORRUPTION` | Rule for passive-origin corrupted mobs. |
 | `excludeVillagers` | `false` | Whether villagers are immune from initial and passive conversion. |
-| `excludeTamedAnimals` | `true` | Whether owned tamed animals are immune. |
+| `excludeTamedAnimals` | `true` | Whether owned tamed animals are excluded from random natural outbreak selection. Agent spread can still convert them. |
 | `debugLogging` | `false` | Enables extra conversion and performance logs. |
 
 Additional recommended config:
@@ -288,6 +290,7 @@ Required safeguards:
 - Configurable conversion chances.
 - Difficulty-scaled initial outbreak chance.
 - Player-adjacent initial outbreak checks with reachable-route validation where practical.
+- Tamed animal exclusion from random natural outbreak selection.
 - Delayed transformation with visible warning.
 - Server-side eligibility checks.
 - Immunity for players and bosses in version 1.

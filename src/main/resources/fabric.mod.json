@@ -3,13 +3,12 @@
 	"id": "simulation-breach",
 	"version": "${version}",
 	"name": "Simulation Breach",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "An eerie Fabric outbreak mod where the simulation assigns hostile Agents to hunt players and rewrite nearby mobs.",
 	"authors": [
 		"Ron Helwig"
 	],
 	"contact": {
-		"homepage": "https://ronhelwig.com/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://ronhelwig.com/"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/simulation-breach/icon.png",

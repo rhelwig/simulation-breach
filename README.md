@@ -1,42 +1,48 @@
 # Simulation Breach
 
-Simulation Breach is a Minecraft Java Edition Fabric mod about a rare breach that rewrites mob identity. The target gameplay centers on The Agent, a spreading entity that can emerge from ordinary non-hostile mobs, corrupt other mobs, and escalate into a world-level outbreak if left unchecked.
+Simulation Breach is a Minecraft Java Edition Fabric mod where the world treats players like breaches in the simulation. The system answers by assigning Agents: hostile entities that can emerge from ordinary mobs, pursue players, and recruit more agents from other mobs.
 
 ## Project Status
 
-This project is in early development. The repository currently contains the Fabric mod scaffold, project metadata, and the gameplay specification. The full outbreak mechanics described here are the target design and may not be available in a playable release yet.
+Simulation Breach is at a releasable version 1 state for Java Edition. Core outbreak, Agent, transformation, audio, rendering, config, and debug-command systems are implemented and build successfully.
 
-See [SPECS.md](SPECS.md) for the authoritative gameplay and cross-edition design.
+The mod is still expected to evolve. Later versions may add stronger corrupted-mob variants, more visuals, more audio, and additional outbreak triggers. See [SPECS.md](SPECS.md) for the broader design.
 
-## Planned Gameplay
+## Gameplay
 
-- Non-hostile mobs can become The Agent, with initial outbreak chance scaling by world difficulty.
-- Peaceful worlds have the lowest initial conversion chance, and Hardcore worlds have the highest where Hardcore is available.
-- Agents spread through successful melee hits, not simple collision.
-- Passive mobs become corrupted hostile mobs first.
-- Originally hostile mobs can become additional Agents.
-- Corrupted passive-origin mobs follow a configurable promotion rule.
-- Transforming mobs shake for a short configurable delay before replacement and play the Agent transformation sound.
+Implemented in the current Java build:
+
+- Rare natural outbreaks can turn eligible non-hostile mobs into The Agent.
+- Initial outbreak chance scales by world difficulty.
+- Natural outbreaks require nearby player context and, by default, a reachable route to a player.
+- Lingering in one area gradually raises local natural outbreak pressure within configurable limits.
+- Tamed animals are excluded from random natural outbreak selection by default.
+- Agents prioritize nearby players while making short conversion detours.
+- Agents can convert nearby non-player mobs during cooldown-limited sweeps, including tamed animals they pass near.
+- Conversions use a visible delayed transformation with shaking and a custom transformation sound.
+- Killing a transforming mob before the delay completes prevents the Agent from spawning.
 - Completed natural outbreaks send a computer-styled system notice.
-- Remaining in one area gradually raises local natural outbreak pressure, within configurable limits.
-- Agents prioritize nearby players and move to attack them, with only short detours to convert nearby mobs.
-- Spread is controlled by configurable chances, cooldowns, and local caps.
-- Converted mobs remember their original entity type and infection stage.
+- Agents have a custom skin, ambient voice, configurable XP reward, and bounded local spread.
+- A debug command, `/simulationbreach transform_nearest [radius]`, can force a nearby mob into Agent transformation for testing.
+- Converted entities persist breach identity data across replacement and saves.
 
-## Java Edition Requirements
+Planned or future work:
 
-Current project metadata targets:
+- Dedicated corrupted-hostile variants instead of routing version 1 spread through Agent transformation.
+- Additional particles or transformation visuals.
+- More Agent action sounds.
+- Player-action outbreak pressure, especially around village and villager disruption.
+- Optional config screen.
+- Bedrock behavior/resource pack implementation.
+
+## Requirements
 
 - Minecraft Java Edition `26.1.2`
 - Fabric Loader `0.19.2` or newer
 - Fabric API `0.146.1+26.1.2`
 - Java `25` or newer
 
-These values come from the current Gradle and Fabric metadata and may change as the mod matures.
-
 ## Installation
-
-When a release jar is available:
 
 1. Install the matching Minecraft Java Edition version.
 2. Install Fabric Loader.
@@ -44,57 +50,86 @@ When a release jar is available:
 4. Place the Simulation Breach jar in your Minecraft `mods` folder.
 5. Start the game with the Fabric profile.
 
-Back up important worlds before testing early builds. Outbreak mechanics are intended to change mob populations.
+Back up important worlds before testing outbreak mods. Simulation Breach is designed to change mob populations.
 
 ## Configuration
 
-The planned configuration includes:
+On first launch, the mod writes:
+
+```text
+config/simulation-breach.json
+```
+
+The config includes:
 
 - Initial Agent outbreak chance.
-- Difficulty multipliers for initial outbreak chance.
+- Difficulty multipliers.
 - Passive, hostile, and corrupted conversion chances.
-- Conversion cooldown.
-- Transformation duration.
-- Transformation sound toggles.
+- Conversion cooldown and local Agent cap.
+- Transformation duration and sound toggles.
 - Agent XP reward.
-- Maximum Agents in a local area.
-- Local player linger outbreak pressure.
+- Player linger outbreak pressure.
 - Natural outbreak chat notice toggle.
 - Passive-origin promotion mode.
-- Tamed animal exclusions.
+- Villager and tamed-animal natural outbreak exclusions.
 - Debug and performance logging.
 
-The default design favors a rare start, visible escalation, and bounded spread. Details are tracked in [SPECS.md](SPECS.md).
+## Storefront Description
 
-## Agent Assets
+Short summary:
 
-The current Agent renderer uses a humanoid zombie-shaped model. Add the Agent texture here:
+```text
+An eerie Fabric outbreak mod where the simulation assigns hostile Agents to hunt players and rewrite nearby mobs.
+```
+
+Long description:
+
+```text
+Simulation Breach turns survival into a quiet systems failure. Ordinary mobs can become Agents, hostile entities assigned by the simulation to correct the player-shaped breach. Agents pursue players, make short detours to convert nearby mobs, and can escalate a calm world into a spreading outbreak if ignored.
+
+Conversions are not instant. A marked mob shakes, plays a custom transformation sound, and can still be killed before the Agent appears. Natural outbreaks are rare, difficulty-scaled, player-adjacent, and bounded by local caps. Staying in one area gradually increases local outbreak pressure, while tamed animals are protected from random outbreak selection but not from an Agent that gets too close.
+
+Version 1 includes The Agent, delayed transformations, custom Agent texture and voice, custom transformation audio, configurable spread rules, XP rewards, natural outbreak alerts, persistent breach data, and an operator debug command for testing.
+```
+
+Feature bullets:
+
+```text
+- Rare player-adjacent natural outbreaks
+- Hostile Agents that prioritize players
+- Delayed, interruptible transformations
+- Custom Agent texture, voice, and transform sound
+- Difficulty-scaled and configurable spread
+- Local outbreak pressure when players linger
+- Natural outbreak system alerts
+- Debug command for testing transformations
+```
+
+## Assets
+
+Agent texture:
 
 ```text
 src/main/resources/assets/simulation-breach/textures/entity/agent/agent.png
 ```
 
-Use a Java Edition PNG texture in the same 64x64 humanoid layout as the vanilla zombie texture. Keep important details bold and high-contrast; the model is seen at distance while moving quickly. The renderer falls back to a tinted vanilla zombie texture until this file exists.
-
-Transformation sound should be an Ogg Vorbis file. For a positional entity sound, use mono audio rather than stereo. Put the first custom transformation sound here:
+Transformation sound:
 
 ```text
 src/main/resources/assets/simulation-breach/sounds/entity/agent/transform.ogg
 ```
 
-The Java code registers this sound as `simulation-breach:entity.agent.transform`. The Creeper priming sound remains available as a config-controlled fallback when the Agent transform sound is disabled.
-
-The Agent ambient voice uses the same audio format and is loaded from:
+Agent ambient voice:
 
 ```text
 src/main/resources/assets/simulation-breach/sounds/entity/agent/voice.ogg
 ```
 
-The Java code registers this sound as `simulation-breach:entity.agent.voice`.
+Use mono Ogg Vorbis for positional entity sounds.
 
 ## Bedrock Edition
 
-This repository is for the Java Fabric mod. The specification is written so the same gameplay rules can later be implemented for Bedrock Edition through a behavior pack, resource pack, and Script API where needed. No Bedrock pack is included in this repository right now.
+This repository is for the Java Fabric mod. The specification is written so the same gameplay rules can later be implemented for Bedrock Edition through a behavior pack, resource pack, and Script API where needed. No Bedrock pack is included right now.
 
 ## Building From Source
 
@@ -106,10 +141,6 @@ Use the Gradle wrapper:
 
 Build outputs are written to `build/libs`.
 
-For IDE setup, see the Fabric documentation:
-
-<https://docs.fabricmc.net/develop/getting-started/creating-a-project#setting-up>
-
 ## Development Notes
 
 - Specifications live in [SPECS.md](SPECS.md).
@@ -119,4 +150,4 @@ For IDE setup, see the Fabric documentation:
 
 ## License
 
-This project currently uses the `CC0-1.0` license declared in the Fabric mod metadata.
+This project uses the `CC0-1.0` license declared in the Fabric mod metadata.

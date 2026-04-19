@@ -25,7 +25,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 
@@ -130,7 +129,7 @@ public final class ConversionManager {
 		Objects.requireNonNull(config, "config");
 		Objects.requireNonNull(random, "random");
 
-		if (!isAgentConversionTarget(target, config)) {
+		if (!isAgentConversionTarget(target)) {
 			return false;
 		}
 
@@ -244,16 +243,14 @@ public final class ConversionManager {
 		return OriginDisposition.PASSIVE;
 	}
 
-	private static boolean isAgentConversionTarget(LivingEntity target, SimulationBreachConfig config) {
+	private static boolean isAgentConversionTarget(LivingEntity target) {
 		if (!target.isAlive() || target.isRemoved() || target instanceof AgentEntity || target instanceof Player) {
 			return false;
 		}
 		if (!(target instanceof Mob)) {
 			return false;
 		}
-		return !config.excludeTamedAnimals()
-				|| !(target instanceof TamableAnimal tamableAnimal)
-				|| !tamableAnimal.isTame();
+		return true;
 	}
 
 	private static double agentConversionChance(

@@ -66,6 +66,9 @@
 - 2026-04-19: Agent voice and breach notice slice `./gradlew compileJava` completed successfully in 2 seconds.
 - 2026-04-19: Agent voice and breach notice slice `./gradlew compileClientJava` completed successfully in 1 second with the existing Fabric renderer deprecation note.
 - 2026-04-19: Agent voice and breach notice slice `./gradlew build` completed successfully in 673 ms; jar resource check confirmed `voice.ogg` is packaged.
+- 2026-04-19: Release README and tamed spread slice `./gradlew compileJava` completed successfully in 757 ms.
+- 2026-04-19: Release README and tamed spread slice `./gradlew compileClientJava` completed successfully in 561 ms.
+- 2026-04-19: Release README and tamed spread slice `./gradlew build` completed successfully in 524 ms; Gradle reported existing deprecation warnings.
 
 ## 2026-04-18 Agent Terminology and Gameplay Spec Update
 
@@ -220,6 +223,14 @@
 - [x] Add config/spec/docs coverage for the natural outbreak notice.
 - [x] Compile, build, and record performance.
 
+## 2026-04-19 Release README and Tamed Spread Slice
+
+- [x] Update README status and gameplay wording for release readiness.
+- [x] Add Modrinth/CurseForge-ready description copy.
+- [x] Keep tamed animals excluded from random natural outbreaks but allow Agent spread conversion.
+- [x] Update specs for the tamed-animal rule distinction.
+- [x] Compile, build, and record performance.
+
 ## Implementation Roadmap
 
 - [x] Foundation: config defaults, validation, promotion mode, difficulty model, and pure outbreak chance rules.
@@ -232,6 +243,8 @@
 - [x] Player linger outbreak pressure: raise local natural outbreak chance when a player remains in one area.
 - [ ] Player action outbreak pressure: raise local natural outbreak chance after specific player actions, especially village and villager changes.
 - [x] Conversion manager: replace entities, transfer breach identity data, prevent duplicate drops/XP, and enforce cooldowns/caps.
+- [x] Natural outbreak tamed animal protection: owned tamed animals are excluded from random chance selection.
+- [x] Agent spread tamed animal risk: owned tamed animals can still be converted by nearby Agents.
 - [x] Interruptible transformations: killing the source before completion prevents Agent spawn.
 - [x] Agent targeting: prioritize nearby players while allowing short bounded conversion detours.
 - [x] Transformation presentation: synced shake state and original Agent transformation sound with Creeper fallback.
