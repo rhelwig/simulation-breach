@@ -18,8 +18,6 @@ public abstract class LivingEntityRendererMixin {
 			float tickProgress,
 			CallbackInfo callbackInfo
 	) {
-		if (TransformationPresentationTracker.isTransforming(entity)) {
-			renderState.isFullyFrozen = true;
-		}
+		TransformationPresentationTracker.applyMotion(entity, renderState, tickProgress);
 	}
 }

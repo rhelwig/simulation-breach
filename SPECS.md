@@ -162,6 +162,7 @@ Version 1 transformation behavior:
 - Duration must be configurable and expected to test in the range of 120 to 200 ticks, or about 6 to 10 seconds.
 - Default duration should start at 180 ticks, or about 9 seconds, until gameplay testing suggests a better value.
 - The transforming mob should shake in a manner similar to a Creeper swelling before it explodes.
+- The transforming mob should shake violently enough to be noticeable at normal play distance, including unnatural side-to-side motion and rotating or spinning offsets that do not look like expected vanilla mob behavior.
 - The transforming mob should play the original Simulation Breach Agent transformation sound.
 - Version 1 may retain the Creeper priming sound as an optional fallback while audio assets are iterated.
 

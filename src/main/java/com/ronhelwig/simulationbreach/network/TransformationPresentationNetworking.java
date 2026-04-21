@@ -9,12 +9,18 @@ public final class TransformationPresentationNetworking {
 	private TransformationPresentationNetworking() {
 	}
 
-	public static void sendStart(Entity entity, int durationTicks) {
-		send(entity, new TransformationPresentationPayload(entity.getId(), durationTicks, true));
+	public static void sendStart(Entity entity, int durationTicks, boolean playAgentSound, boolean playPlaceholderSound) {
+		send(entity, new TransformationPresentationPayload(
+				entity.getId(),
+				durationTicks,
+				true,
+				playAgentSound,
+				playPlaceholderSound
+		));
 	}
 
 	public static void sendStop(Entity entity) {
-		send(entity, new TransformationPresentationPayload(entity.getId(), 0, false));
+		send(entity, new TransformationPresentationPayload(entity.getId(), 0, false, false, false));
 	}
 
 	private static void send(Entity entity, TransformationPresentationPayload payload) {

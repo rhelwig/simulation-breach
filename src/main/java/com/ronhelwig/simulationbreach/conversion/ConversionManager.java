@@ -11,15 +11,12 @@ import com.ronhelwig.simulationbreach.identity.InfectionStage;
 import com.ronhelwig.simulationbreach.identity.OriginDisposition;
 import com.ronhelwig.simulationbreach.identity.TransformationState;
 import com.ronhelwig.simulationbreach.network.TransformationPresentationNetworking;
-import com.ronhelwig.simulationbreach.sound.ModSounds;
 import com.ronhelwig.simulationbreach.transformation.TransformationManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -84,8 +81,12 @@ public final class ConversionManager {
 				.build();
 
 		setBreachData(source, transformingData);
-		TransformationPresentationNetworking.sendStart(source, config.transformationDurationTicks());
-		playTransformationStartSound(level, source, config);
+		TransformationPresentationNetworking.sendStart(
+				source,
+				config.transformationDurationTicks(),
+				config.enableAgentTransformSound(),
+				!config.enableAgentTransformSound() && config.enablePlaceholderCreeperTransformSound()
+		);
 		logDebug(config, "Started Agent transformation for {} at {} with duration {} ticks",
 				EntityType.getKey(source.getType()), source.blockPosition(), config.transformationDurationTicks());
 		return true;
@@ -287,16 +288,6 @@ public final class ConversionManager {
 	private static void clearBreachData(Entity entity) {
 		if (entity instanceof BreachDataHolder holder) {
 			holder.simulationBreach$clearBreachData();
-		}
-	}
-
-	private static void playTransformationStartSound(ServerLevel level, LivingEntity source, SimulationBreachConfig config) {
-		if (config.enableAgentTransformSound()) {
-			level.playSound(null, source.blockPosition(), ModSounds.AGENT_TRANSFORM, SoundSource.HOSTILE, 1.0F, 1.0F);
-			return;
-		}
-		if (config.enablePlaceholderCreeperTransformSound()) {
-			level.playSound(null, source.blockPosition(), SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 1.0F, 0.85F);
 		}
 	}
 

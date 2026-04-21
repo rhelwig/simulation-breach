@@ -69,6 +69,9 @@
 - 2026-04-19: Release README and tamed spread slice `./gradlew compileJava` completed successfully in 757 ms.
 - 2026-04-19: Release README and tamed spread slice `./gradlew compileClientJava` completed successfully in 561 ms.
 - 2026-04-19: Release README and tamed spread slice `./gradlew build` completed successfully in 524 ms; Gradle reported existing deprecation warnings.
+- 2026-04-20: Transformation sync and violence slice `./gradlew compileJava` completed successfully in 8 seconds after waiting on a Loom cache lock.
+- 2026-04-20: Parallel `./gradlew compileClientJava` was invalid while `compileJava` held Gradle/Loom state and failed with missing project classes; sequential rerun completed successfully in 1 second.
+- 2026-04-20: Transformation sync and violence slice `./gradlew build` completed successfully in 863 ms; Gradle reported existing deprecation warnings.
 
 ## 2026-04-18 Agent Terminology and Gameplay Spec Update
 
@@ -229,6 +232,14 @@
 - [x] Add Modrinth/CurseForge-ready description copy.
 - [x] Keep tamed animals excluded from random natural outbreaks but allow Agent spread conversion.
 - [x] Update specs for the tamed-animal rule distinction.
+- [x] Compile, build, and record performance.
+
+## 2026-04-20 Transformation Sync and Violence Slice
+
+- [x] Review reported transformation presentation bugs and current packet/sound flow.
+- [x] Update specs for more violent, unnatural transformation motion.
+- [x] Start transformation sound from the same client presentation event that starts shaking.
+- [x] Replace frozen-only shake with stronger client-side position and rotation offsets.
 - [x] Compile, build, and record performance.
 
 ## Implementation Roadmap
