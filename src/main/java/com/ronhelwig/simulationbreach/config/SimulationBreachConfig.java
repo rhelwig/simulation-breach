@@ -28,6 +28,13 @@ public final class SimulationBreachConfig {
 	public static final int DEFAULT_PLAYER_LINGER_PRESSURE_GRACE_TICKS = 1200;
 	public static final int DEFAULT_PLAYER_LINGER_PRESSURE_RAMP_TICKS = 4800;
 	public static final double DEFAULT_MAX_PLAYER_LINGER_PRESSURE_MULTIPLIER = 4.0D;
+	public static final boolean DEFAULT_ENABLE_PLAYER_BLOCK_CHANGE_OUTBREAK_PRESSURE = true;
+	public static final double DEFAULT_PLAYER_BLOCK_CHANGE_PRESSURE_RADIUS = 48.0D;
+	public static final int DEFAULT_PLAYER_BLOCK_CHANGE_PRESSURE_DURATION_TICKS = 12000;
+	public static final int DEFAULT_PLAYER_BLOCK_CHANGES_PER_PRESSURE_STEP = 100;
+	public static final double DEFAULT_PLAYER_BLOCK_CHANGE_PRESSURE_STEP_MULTIPLIER = 0.01D;
+	public static final double DEFAULT_MAX_PLAYER_BLOCK_CHANGE_PRESSURE_MULTIPLIER = 2.0D;
+	public static final double DEFAULT_AGENT_DESPAWN_NEARBY_PLAYER_RADIUS = 48.0D;
 	public static final boolean DEFAULT_ENABLE_NATURAL_OUTBREAK_CHAT_NOTICE = true;
 	public static final PassivePromotionMode DEFAULT_PASSIVE_PROMOTION_MODE = PassivePromotionMode.PROMOTED_CORRUPTION;
 	public static final boolean DEFAULT_EXCLUDE_VILLAGERS = false;
@@ -61,6 +68,13 @@ public final class SimulationBreachConfig {
 	private final int playerLingerPressureGraceTicks;
 	private final int playerLingerPressureRampTicks;
 	private final double maxPlayerLingerPressureMultiplier;
+	private final boolean enablePlayerBlockChangeOutbreakPressure;
+	private final double playerBlockChangePressureRadius;
+	private final int playerBlockChangePressureDurationTicks;
+	private final int playerBlockChangesPerPressureStep;
+	private final double playerBlockChangePressureStepMultiplier;
+	private final double maxPlayerBlockChangePressureMultiplier;
+	private final double agentDespawnNearbyPlayerRadius;
 	private final boolean enableNaturalOutbreakChatNotice;
 	private final PassivePromotionMode passivePromotionMode;
 	private final boolean excludeVillagers;
@@ -95,6 +109,13 @@ public final class SimulationBreachConfig {
 		this.playerLingerPressureGraceTicks = builder.playerLingerPressureGraceTicks;
 		this.playerLingerPressureRampTicks = builder.playerLingerPressureRampTicks;
 		this.maxPlayerLingerPressureMultiplier = builder.maxPlayerLingerPressureMultiplier;
+		this.enablePlayerBlockChangeOutbreakPressure = builder.enablePlayerBlockChangeOutbreakPressure;
+		this.playerBlockChangePressureRadius = builder.playerBlockChangePressureRadius;
+		this.playerBlockChangePressureDurationTicks = builder.playerBlockChangePressureDurationTicks;
+		this.playerBlockChangesPerPressureStep = builder.playerBlockChangesPerPressureStep;
+		this.playerBlockChangePressureStepMultiplier = builder.playerBlockChangePressureStepMultiplier;
+		this.maxPlayerBlockChangePressureMultiplier = builder.maxPlayerBlockChangePressureMultiplier;
+		this.agentDespawnNearbyPlayerRadius = builder.agentDespawnNearbyPlayerRadius;
 		this.enableNaturalOutbreakChatNotice = builder.enableNaturalOutbreakChatNotice;
 		this.passivePromotionMode = builder.passivePromotionMode;
 		this.excludeVillagers = builder.excludeVillagers;
@@ -220,6 +241,34 @@ public final class SimulationBreachConfig {
 		return maxPlayerLingerPressureMultiplier;
 	}
 
+	public boolean enablePlayerBlockChangeOutbreakPressure() {
+		return enablePlayerBlockChangeOutbreakPressure;
+	}
+
+	public double playerBlockChangePressureRadius() {
+		return playerBlockChangePressureRadius;
+	}
+
+	public int playerBlockChangePressureDurationTicks() {
+		return playerBlockChangePressureDurationTicks;
+	}
+
+	public int playerBlockChangesPerPressureStep() {
+		return playerBlockChangesPerPressureStep;
+	}
+
+	public double playerBlockChangePressureStepMultiplier() {
+		return playerBlockChangePressureStepMultiplier;
+	}
+
+	public double maxPlayerBlockChangePressureMultiplier() {
+		return maxPlayerBlockChangePressureMultiplier;
+	}
+
+	public double agentDespawnNearbyPlayerRadius() {
+		return agentDespawnNearbyPlayerRadius;
+	}
+
 	public boolean enableNaturalOutbreakChatNotice() {
 		return enableNaturalOutbreakChatNotice;
 	}
@@ -263,6 +312,12 @@ public final class SimulationBreachConfig {
 		validateNonNegative("playerLingerPressureGraceTicks", playerLingerPressureGraceTicks);
 		validatePositive("playerLingerPressureRampTicks", playerLingerPressureRampTicks);
 		validateAtLeastOne("maxPlayerLingerPressureMultiplier", maxPlayerLingerPressureMultiplier);
+		validatePositive("playerBlockChangePressureRadius", playerBlockChangePressureRadius);
+		validatePositive("playerBlockChangePressureDurationTicks", playerBlockChangePressureDurationTicks);
+		validatePositive("playerBlockChangesPerPressureStep", playerBlockChangesPerPressureStep);
+		validateNonNegative("playerBlockChangePressureStepMultiplier", playerBlockChangePressureStepMultiplier);
+		validateAtLeastOne("maxPlayerBlockChangePressureMultiplier", maxPlayerBlockChangePressureMultiplier);
+		validatePositive("agentDespawnNearbyPlayerRadius", agentDespawnNearbyPlayerRadius);
 
 		if (passivePromotionMode == null) {
 			throw new IllegalArgumentException("passivePromotionMode must not be null");
@@ -340,6 +395,13 @@ public final class SimulationBreachConfig {
 		private int playerLingerPressureGraceTicks = DEFAULT_PLAYER_LINGER_PRESSURE_GRACE_TICKS;
 		private int playerLingerPressureRampTicks = DEFAULT_PLAYER_LINGER_PRESSURE_RAMP_TICKS;
 		private double maxPlayerLingerPressureMultiplier = DEFAULT_MAX_PLAYER_LINGER_PRESSURE_MULTIPLIER;
+		private boolean enablePlayerBlockChangeOutbreakPressure = DEFAULT_ENABLE_PLAYER_BLOCK_CHANGE_OUTBREAK_PRESSURE;
+		private double playerBlockChangePressureRadius = DEFAULT_PLAYER_BLOCK_CHANGE_PRESSURE_RADIUS;
+		private int playerBlockChangePressureDurationTicks = DEFAULT_PLAYER_BLOCK_CHANGE_PRESSURE_DURATION_TICKS;
+		private int playerBlockChangesPerPressureStep = DEFAULT_PLAYER_BLOCK_CHANGES_PER_PRESSURE_STEP;
+		private double playerBlockChangePressureStepMultiplier = DEFAULT_PLAYER_BLOCK_CHANGE_PRESSURE_STEP_MULTIPLIER;
+		private double maxPlayerBlockChangePressureMultiplier = DEFAULT_MAX_PLAYER_BLOCK_CHANGE_PRESSURE_MULTIPLIER;
+		private double agentDespawnNearbyPlayerRadius = DEFAULT_AGENT_DESPAWN_NEARBY_PLAYER_RADIUS;
 		private boolean enableNaturalOutbreakChatNotice = DEFAULT_ENABLE_NATURAL_OUTBREAK_CHAT_NOTICE;
 		private PassivePromotionMode passivePromotionMode = DEFAULT_PASSIVE_PROMOTION_MODE;
 		private boolean excludeVillagers = DEFAULT_EXCLUDE_VILLAGERS;
@@ -481,6 +543,41 @@ public final class SimulationBreachConfig {
 
 		public Builder maxPlayerLingerPressureMultiplier(double maxPlayerLingerPressureMultiplier) {
 			this.maxPlayerLingerPressureMultiplier = maxPlayerLingerPressureMultiplier;
+			return this;
+		}
+
+		public Builder enablePlayerBlockChangeOutbreakPressure(boolean enablePlayerBlockChangeOutbreakPressure) {
+			this.enablePlayerBlockChangeOutbreakPressure = enablePlayerBlockChangeOutbreakPressure;
+			return this;
+		}
+
+		public Builder playerBlockChangePressureRadius(double playerBlockChangePressureRadius) {
+			this.playerBlockChangePressureRadius = playerBlockChangePressureRadius;
+			return this;
+		}
+
+		public Builder playerBlockChangePressureDurationTicks(int playerBlockChangePressureDurationTicks) {
+			this.playerBlockChangePressureDurationTicks = playerBlockChangePressureDurationTicks;
+			return this;
+		}
+
+		public Builder playerBlockChangesPerPressureStep(int playerBlockChangesPerPressureStep) {
+			this.playerBlockChangesPerPressureStep = playerBlockChangesPerPressureStep;
+			return this;
+		}
+
+		public Builder playerBlockChangePressureStepMultiplier(double playerBlockChangePressureStepMultiplier) {
+			this.playerBlockChangePressureStepMultiplier = playerBlockChangePressureStepMultiplier;
+			return this;
+		}
+
+		public Builder maxPlayerBlockChangePressureMultiplier(double maxPlayerBlockChangePressureMultiplier) {
+			this.maxPlayerBlockChangePressureMultiplier = maxPlayerBlockChangePressureMultiplier;
+			return this;
+		}
+
+		public Builder agentDespawnNearbyPlayerRadius(double agentDespawnNearbyPlayerRadius) {
+			this.agentDespawnNearbyPlayerRadius = agentDespawnNearbyPlayerRadius;
 			return this;
 		}
 

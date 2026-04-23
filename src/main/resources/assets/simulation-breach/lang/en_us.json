@@ -1,0 +1,5 @@
+{
+  "entity.simulation-breach.agent": "Agent",
+  "death.attack.simulation_breach_agent": "Simulation infestation %1$s eradicated.",
+  "death.attack.simulation_breach_agent.item": "Simulation infestation %1$s eradicated."
+}

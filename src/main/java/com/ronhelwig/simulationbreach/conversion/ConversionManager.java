@@ -150,6 +150,47 @@ public final class ConversionManager {
 		return beginAgentTransformation(level, target, config, agent, "agent_spread");
 	}
 
+	public static boolean replaceAgentWithOriginalMob(ServerLevel level, AgentEntity agent) {
+		Objects.requireNonNull(level, "level");
+		Objects.requireNonNull(agent, "agent");
+
+		String originalEntityTypeId = agent.breachData().originalEntityType();
+		if (originalEntityTypeId.equals(ModEntities.AGENT_ID.toString())) {
+			return false;
+		}
+
+		Optional<EntityType<?>> originalEntityType = EntityType.byString(originalEntityTypeId);
+		if (originalEntityType.isEmpty()) {
+			SimulationBreach.LOGGER.warn("Could not restore Agent {} because original entity type {} is unknown",
+					agent.getUUID(), originalEntityTypeId);
+			return false;
+		}
+
+		Entity restored = originalEntityType.get().create(level, EntitySpawnReason.CONVERSION);
+		if (!(restored instanceof LivingEntity restoredLiving)) {
+			SimulationBreach.LOGGER.warn("Could not restore Agent {} because original entity type {} is not living",
+					agent.getUUID(), originalEntityTypeId);
+			return false;
+		}
+
+		transferRestoredState(agent, restoredLiving);
+		if (!level.addFreshEntity(restoredLiving)) {
+			SimulationBreach.LOGGER.warn("Could not spawn restored original mob {} for Agent {} at {}",
+					originalEntityTypeId, agent.getUUID(), agent.blockPosition());
+			return false;
+		}
+
+		clearBreachData(restoredLiving);
+		agent.skipDropExperience();
+		agent.discard();
+
+		if (SimulationBreach.CONFIG.debugLogging()) {
+			SimulationBreach.LOGGER.info("Restored Agent {} to original mob {} at {}",
+					agent.getUUID(), originalEntityTypeId, restoredLiving.blockPosition());
+		}
+		return true;
+	}
+
 	public static void cancelTransformation(LivingEntity source, String reason) {
 		Objects.requireNonNull(source, "source");
 		Optional<BreachEntityData> data = breachData(source);
@@ -235,6 +276,30 @@ public final class ConversionManager {
 
 		float healthRatio = Math.max(0.0F, Math.min(1.0F, source.getHealth() / source.getMaxHealth()));
 		agent.setHealth(Math.max(1.0F, agent.getMaxHealth() * healthRatio));
+	}
+
+	private static void transferRestoredState(AgentEntity agent, LivingEntity restored) {
+		restored.snapTo(agent.getX(), agent.getY(), agent.getZ(), agent.getYRot(), agent.getXRot());
+		restored.setDeltaMovement(agent.getDeltaMovement());
+		restored.setRemainingFireTicks(agent.getRemainingFireTicks());
+		restored.setSilent(agent.isSilent());
+		restored.setInvulnerable(agent.isInvulnerable());
+		restored.setGlowingTag(agent.isCurrentlyGlowing());
+
+		if (agent.hasCustomName()) {
+			restored.setCustomName(agent.getCustomName());
+			restored.setCustomNameVisible(agent.isCustomNameVisible());
+		}
+
+		if (restored instanceof Mob restoredMob) {
+			restoredMob.setNoAi(agent.isNoAi());
+			if (agent.isPersistenceRequired()) {
+				restoredMob.setPersistenceRequired();
+			}
+		}
+
+		float healthRatio = Math.max(0.0F, Math.min(1.0F, agent.getHealth() / agent.getMaxHealth()));
+		restored.setHealth(Math.max(1.0F, restored.getMaxHealth() * healthRatio));
 	}
 
 	private static OriginDisposition originDispositionFor(LivingEntity entity) {

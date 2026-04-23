@@ -91,6 +91,13 @@ public final class SimulationBreachConfigLoader {
 		private Integer playerLingerPressureGraceTicks;
 		private Integer playerLingerPressureRampTicks;
 		private Double maxPlayerLingerPressureMultiplier;
+		private Boolean enablePlayerBlockChangeOutbreakPressure;
+		private Double playerBlockChangePressureRadius;
+		private Integer playerBlockChangePressureDurationTicks;
+		private Integer playerBlockChangesPerPressureStep;
+		private Double playerBlockChangePressureStepMultiplier;
+		private Double maxPlayerBlockChangePressureMultiplier;
+		private Double agentDespawnNearbyPlayerRadius;
 		private Boolean enableNaturalOutbreakChatNotice;
 		private PassivePromotionMode passivePromotionMode;
 		private Boolean excludeVillagers;
@@ -126,6 +133,13 @@ public final class SimulationBreachConfigLoader {
 			data.playerLingerPressureGraceTicks = config.playerLingerPressureGraceTicks();
 			data.playerLingerPressureRampTicks = config.playerLingerPressureRampTicks();
 			data.maxPlayerLingerPressureMultiplier = config.maxPlayerLingerPressureMultiplier();
+			data.enablePlayerBlockChangeOutbreakPressure = config.enablePlayerBlockChangeOutbreakPressure();
+			data.playerBlockChangePressureRadius = config.playerBlockChangePressureRadius();
+			data.playerBlockChangePressureDurationTicks = config.playerBlockChangePressureDurationTicks();
+			data.playerBlockChangesPerPressureStep = config.playerBlockChangesPerPressureStep();
+			data.playerBlockChangePressureStepMultiplier = config.playerBlockChangePressureStepMultiplier();
+			data.maxPlayerBlockChangePressureMultiplier = config.maxPlayerBlockChangePressureMultiplier();
+			data.agentDespawnNearbyPlayerRadius = config.agentDespawnNearbyPlayerRadius();
 			data.enableNaturalOutbreakChatNotice = config.enableNaturalOutbreakChatNotice();
 			data.passivePromotionMode = config.passivePromotionMode();
 			data.excludeVillagers = config.excludeVillagers();
@@ -216,6 +230,27 @@ public final class SimulationBreachConfigLoader {
 			}
 			if (maxPlayerLingerPressureMultiplier != null) {
 				builder.maxPlayerLingerPressureMultiplier(maxPlayerLingerPressureMultiplier);
+			}
+			if (enablePlayerBlockChangeOutbreakPressure != null) {
+				builder.enablePlayerBlockChangeOutbreakPressure(enablePlayerBlockChangeOutbreakPressure);
+			}
+			if (playerBlockChangePressureRadius != null) {
+				builder.playerBlockChangePressureRadius(playerBlockChangePressureRadius);
+			}
+			if (playerBlockChangePressureDurationTicks != null) {
+				builder.playerBlockChangePressureDurationTicks(playerBlockChangePressureDurationTicks);
+			}
+			if (playerBlockChangesPerPressureStep != null) {
+				builder.playerBlockChangesPerPressureStep(playerBlockChangesPerPressureStep);
+			}
+			if (playerBlockChangePressureStepMultiplier != null) {
+				builder.playerBlockChangePressureStepMultiplier(playerBlockChangePressureStepMultiplier);
+			}
+			if (maxPlayerBlockChangePressureMultiplier != null) {
+				builder.maxPlayerBlockChangePressureMultiplier(maxPlayerBlockChangePressureMultiplier);
+			}
+			if (agentDespawnNearbyPlayerRadius != null) {
+				builder.agentDespawnNearbyPlayerRadius(agentDespawnNearbyPlayerRadius);
 			}
 			if (enableNaturalOutbreakChatNotice != null) {
 				builder.enableNaturalOutbreakChatNotice(enableNaturalOutbreakChatNotice);

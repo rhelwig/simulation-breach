@@ -75,6 +75,8 @@ Player actions should create local outbreak pressure instead of the world relyin
 
 Players lingering in one area should also create gradual local outbreak pressure. This pressure must be configurable, bounded by a maximum multiplier, and reset when the player moves outside the configured area or leaves the dimension. Linger pressure increases the natural outbreak chance for eligible mobs near that area, but it must not bypass player-adjacency, reachability, immunity, caps, or delayed transformation requirements.
 
+Ordinary block changes by a player should create low local outbreak pressure. By default, every 100 player-placed or player-mined blocks inside the local pressure area increases the natural outbreak chance multiplier by 1%, capped by config and expiring after the player stops changing blocks. This is a relative multiplier increase, not an absolute percentage-point addition to the base chance.
+
 Version 1 player action pressure should prioritize actions that affect villagers and villages:
 
 - Highest pressure: breaking, placing, or changing blocks that are part of village buildings or villager life, such as beds, job-site blocks, bells, doors, or walls around inhabited village structures.
@@ -110,6 +112,10 @@ Agents may briefly deviate from their path to attempt mob conversion, but the de
 When an Agent is close enough to eligible non-player mobs during a conversion pass, it should attempt every eligible mob within its configured detour radius rather than choosing one random target. The chance for each attempt should be high by default, especially for mobs that are already hostile or corrupted. These conversion sweeps must be cooldown-limited and must respect local Agent caps.
 
 If no player target is available, Agents may pursue eligible conversion targets according to the normal conversion rules and local caps.
+
+When an Agent kills the player it was tracking, it should not immediately despawn if other viable players are nearby. If the tracked player is dead and no other non-spectator living player is within the configured nearby-player radius, the surviving Agent should despawn and be replaced by its recorded original mob type.
+
+Agent player kills should use original Simulation Breach death text. The Agent entity name should localize as `Agent`, and player death messages from Agent attacks should read: `Simulation infestation <player name> eradicated.`
 
 ### 3.4 Passive-Origin Promotion Rule
 
@@ -239,6 +245,13 @@ Default values:
 | `playerLingerPressureGraceTicks` | `1200` | Ticks a player can remain in one area before linger pressure starts increasing. |
 | `playerLingerPressureRampTicks` | `4800` | Ticks after the grace period required to reach the maximum linger pressure multiplier. |
 | `maxPlayerLingerPressureMultiplier` | `4.0` | Maximum multiplier applied to natural outbreak chance from player linger pressure. |
+| `enablePlayerBlockChangeOutbreakPressure` | `true` | Whether player-placed and player-mined blocks add local natural outbreak pressure. |
+| `playerBlockChangePressureRadius` | `48.0` | Radius around the block-change pressure anchor where eligible mobs receive the pressure multiplier. |
+| `playerBlockChangePressureDurationTicks` | `12000` | Ticks after the last block change before the block-change pressure record expires. |
+| `playerBlockChangesPerPressureStep` | `100` | Player block changes required for one pressure step. |
+| `playerBlockChangePressureStepMultiplier` | `0.01` | Relative natural outbreak chance multiplier added by each completed block-change pressure step. |
+| `maxPlayerBlockChangePressureMultiplier` | `2.0` | Maximum multiplier applied to natural outbreak chance from block-change pressure. |
+| `agentDespawnNearbyPlayerRadius` | `48.0` | Radius used to decide whether other players are near enough to keep Agents active after their tracked player dies. |
 | `enableNaturalOutbreakChatNotice` | `true` | Whether completed natural random Agent outbreaks send a computer-styled chat notice. |
 | `passivePromotionMode` | `PROMOTED_CORRUPTION` | Rule for passive-origin corrupted mobs. |
 | `excludeVillagers` | `false` | Whether villagers are immune from initial and passive conversion. |

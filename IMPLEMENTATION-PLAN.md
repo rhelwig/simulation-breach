@@ -11,6 +11,12 @@
 
 ## Performance Log
 
+- 2026-04-23: Agent death/reversion/block-pressure slice repository searches completed in under 1 second each using `find`/`grep` because `rg` is not installed.
+- 2026-04-23: Agent death/reversion/block-pressure slice first `./gradlew compileJava` completed successfully in 5 seconds.
+- 2026-04-23: Agent death/reversion/block-pressure slice `./gradlew compileClientJava` completed successfully in 1 second with the existing Fabric renderer deprecation note.
+- 2026-04-23: Agent death/reversion/block-pressure slice final `./gradlew compileJava` completed successfully in 885 ms.
+- 2026-04-23: Agent death/reversion/block-pressure slice final `./gradlew build` completed successfully in 865 ms; Gradle reported existing deprecation warnings from build tooling/plugins.
+- 2026-04-23: Agent death/reversion/block-pressure slice jar resource check confirmed the Agent lang file, custom damage type, block-placement mixin, and damage type class are packaged.
 - 2026-04-18: Direct shared-thread fetch via `curl -sL` completed in about 1 second after sandbox network approval.
 - 2026-04-18: Repository inspection commands completed in under 1 second each.
 - 2026-04-18: `./gradlew compileJava` completed successfully in 9 seconds.
@@ -238,6 +244,15 @@
 
 - [x] Review reported transformation presentation bugs and current packet/sound flow.
 - [x] Update specs for more violent, unnatural transformation motion.
+
+## 2026-04-23 Agent Death, Reversion, and Block Pressure Slice
+
+- [x] Inspect Agent entity, conversion, outbreak, config, and resource wiring.
+- [x] Add player-facing Agent name and custom Agent player death message.
+- [x] Revert Agents to their original mob after their tracked player dies when no other players are nearby.
+- [x] Add local block-placement/mining outbreak pressure.
+- [x] Update specs for the new behavior.
+- [x] Compile, build, and record performance.
 - [x] Start transformation sound from the same client presentation event that starts shaking.
 - [x] Replace frozen-only shake with stronger client-side position and rotation offsets.
 - [x] Compile, build, and record performance.
