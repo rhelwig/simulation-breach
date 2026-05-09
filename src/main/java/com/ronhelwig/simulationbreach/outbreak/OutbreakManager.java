@@ -173,6 +173,9 @@ public final class OutbreakManager {
 		if (!(entity instanceof Mob mob)) {
 			return false;
 		}
+		if (ConversionManager.isNameTaggedConversionImmune(mob, config)) {
+			return false;
+		}
 
 		boolean eligibleType = entity instanceof Animal || (!config.excludeVillagers() && entity instanceof Villager);
 		if (!eligibleType) {

@@ -39,6 +39,8 @@ public final class SimulationBreachConfig {
 	public static final PassivePromotionMode DEFAULT_PASSIVE_PROMOTION_MODE = PassivePromotionMode.PROMOTED_CORRUPTION;
 	public static final boolean DEFAULT_EXCLUDE_VILLAGERS = false;
 	public static final boolean DEFAULT_EXCLUDE_TAMED_ANIMALS = true;
+	public static final boolean DEFAULT_EXCLUDE_TAMED_ANIMALS_FROM_AGENT_SPREAD = false;
+	public static final boolean DEFAULT_EXCLUDE_NAMED_ENTITIES = true;
 	public static final boolean DEFAULT_DEBUG_LOGGING = false;
 
 	private final double initialPassiveAgentChance;
@@ -79,6 +81,8 @@ public final class SimulationBreachConfig {
 	private final PassivePromotionMode passivePromotionMode;
 	private final boolean excludeVillagers;
 	private final boolean excludeTamedAnimals;
+	private final boolean excludeTamedAnimalsFromAgentSpread;
+	private final boolean excludeNamedEntities;
 	private final boolean debugLogging;
 
 	private SimulationBreachConfig(Builder builder) {
@@ -120,6 +124,8 @@ public final class SimulationBreachConfig {
 		this.passivePromotionMode = builder.passivePromotionMode;
 		this.excludeVillagers = builder.excludeVillagers;
 		this.excludeTamedAnimals = builder.excludeTamedAnimals;
+		this.excludeTamedAnimalsFromAgentSpread = builder.excludeTamedAnimalsFromAgentSpread;
+		this.excludeNamedEntities = builder.excludeNamedEntities;
 		this.debugLogging = builder.debugLogging;
 
 		validate();
@@ -285,6 +291,14 @@ public final class SimulationBreachConfig {
 		return excludeTamedAnimals;
 	}
 
+	public boolean excludeTamedAnimalsFromAgentSpread() {
+		return excludeTamedAnimalsFromAgentSpread;
+	}
+
+	public boolean excludeNamedEntities() {
+		return excludeNamedEntities;
+	}
+
 	public boolean debugLogging() {
 		return debugLogging;
 	}
@@ -406,6 +420,8 @@ public final class SimulationBreachConfig {
 		private PassivePromotionMode passivePromotionMode = DEFAULT_PASSIVE_PROMOTION_MODE;
 		private boolean excludeVillagers = DEFAULT_EXCLUDE_VILLAGERS;
 		private boolean excludeTamedAnimals = DEFAULT_EXCLUDE_TAMED_ANIMALS;
+		private boolean excludeTamedAnimalsFromAgentSpread = DEFAULT_EXCLUDE_TAMED_ANIMALS_FROM_AGENT_SPREAD;
+		private boolean excludeNamedEntities = DEFAULT_EXCLUDE_NAMED_ENTITIES;
 		private boolean debugLogging = DEFAULT_DEBUG_LOGGING;
 
 		private Builder() {
@@ -598,6 +614,16 @@ public final class SimulationBreachConfig {
 
 		public Builder excludeTamedAnimals(boolean excludeTamedAnimals) {
 			this.excludeTamedAnimals = excludeTamedAnimals;
+			return this;
+		}
+
+		public Builder excludeTamedAnimalsFromAgentSpread(boolean excludeTamedAnimalsFromAgentSpread) {
+			this.excludeTamedAnimalsFromAgentSpread = excludeTamedAnimalsFromAgentSpread;
+			return this;
+		}
+
+		public Builder excludeNamedEntities(boolean excludeNamedEntities) {
+			this.excludeNamedEntities = excludeNamedEntities;
 			return this;
 		}
 

@@ -227,7 +227,9 @@ public class AgentEntity extends Monster {
 				&& !(entity instanceof AgentEntity)
 				&& !(entity instanceof Player)
 				&& entity.isAlive()
-				&& !entity.isRemoved();
+				&& !entity.isRemoved()
+				&& (!(entity instanceof LivingEntity livingEntity)
+				|| !ConversionManager.isNameTaggedConversionImmune(livingEntity, SimulationBreach.CONFIG));
 	}
 
 	private static BreachEntityData defaultBreachData() {

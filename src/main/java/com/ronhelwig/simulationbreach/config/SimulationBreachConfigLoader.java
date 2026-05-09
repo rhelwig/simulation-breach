@@ -102,6 +102,8 @@ public final class SimulationBreachConfigLoader {
 		private PassivePromotionMode passivePromotionMode;
 		private Boolean excludeVillagers;
 		private Boolean excludeTamedAnimals;
+		private Boolean excludeTamedAnimalsFromAgentSpread;
+		private Boolean excludeNamedEntities;
 		private Boolean debugLogging;
 
 		static ConfigData from(SimulationBreachConfig config) {
@@ -144,6 +146,8 @@ public final class SimulationBreachConfigLoader {
 			data.passivePromotionMode = config.passivePromotionMode();
 			data.excludeVillagers = config.excludeVillagers();
 			data.excludeTamedAnimals = config.excludeTamedAnimals();
+			data.excludeTamedAnimalsFromAgentSpread = config.excludeTamedAnimalsFromAgentSpread();
+			data.excludeNamedEntities = config.excludeNamedEntities();
 			data.debugLogging = config.debugLogging();
 			return data;
 		}
@@ -263,6 +267,12 @@ public final class SimulationBreachConfigLoader {
 			}
 			if (excludeTamedAnimals != null) {
 				builder.excludeTamedAnimals(excludeTamedAnimals);
+			}
+			if (excludeTamedAnimalsFromAgentSpread != null) {
+				builder.excludeTamedAnimalsFromAgentSpread(excludeTamedAnimalsFromAgentSpread);
+			}
+			if (excludeNamedEntities != null) {
+				builder.excludeNamedEntities(excludeNamedEntities);
 			}
 			if (debugLogging != null) {
 				builder.debugLogging(debugLogging);

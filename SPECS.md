@@ -50,6 +50,7 @@ Default natural-outbreak exclusions:
 
 - Players
 - Bosses
+- Name-tagged mobs with custom names
 - Tamed animals with owners
 - Utility mobs, unless explicitly enabled
 - Ambient mobs, unless explicitly enabled
@@ -97,7 +98,11 @@ When The Agent lands a melee hit:
 - Target is hostile but originally non-hostile: apply the configured passive-origin promotion rule.
 - Target is a player: attack normally. Player conversion is out of scope for version 1.
 
-Owned tamed animals are protected from random natural outbreak selection by default, but they are not protected from direct Agent spread. If an Agent passes near a tamed animal during its conversion sweep, that animal can still begin the delayed transformation.
+Owned tamed animals are protected from random natural outbreak selection by default. Agent spread protection for owned tamed animals must also be configurable so players can decide whether direct Agent spread is allowed to convert them.
+
+Villagers must honor their exclusion setting across both natural outbreaks and Agent-driven conversion.
+
+Mobs with custom names must have a named-entity exclusion setting. When that setting is enabled, named mobs are protected from both natural outbreaks and Agent-driven conversion. If a mob is name-tagged while a delayed transformation is already running, that transformation must be cancelled before The Agent spawns.
 
 The corrupted hostile result may be a vanilla hostile mob such as zombie, skeleton, husk, or stray. Version 1 may use vanilla hostile mobs. Later versions may add custom corrupted variants for clearer visuals and better control.
 
@@ -254,8 +259,10 @@ Default values:
 | `agentDespawnNearbyPlayerRadius` | `48.0` | Radius used to decide whether other players are near enough to keep Agents active after their tracked player dies. |
 | `enableNaturalOutbreakChatNotice` | `true` | Whether completed natural random Agent outbreaks send a computer-styled chat notice. |
 | `passivePromotionMode` | `PROMOTED_CORRUPTION` | Rule for passive-origin corrupted mobs. |
-| `excludeVillagers` | `false` | Whether villagers are immune from initial and passive conversion. |
-| `excludeTamedAnimals` | `true` | Whether owned tamed animals are excluded from random natural outbreak selection. Agent spread can still convert them. |
+| `excludeVillagers` | `false` | Whether villagers are immune from both natural outbreaks and Agent-driven conversion. |
+| `excludeTamedAnimals` | `true` | Whether owned tamed animals are excluded from random natural outbreak selection. |
+| `excludeTamedAnimalsFromAgentSpread` | `false` | Whether owned tamed animals are immune from direct Agent-driven conversion. |
+| `excludeNamedEntities` | `true` | Whether mobs with custom names are immune from both natural outbreaks and Agent-driven conversion. |
 | `debugLogging` | `false` | Enables extra conversion and performance logs. |
 
 Additional recommended config:

@@ -22,7 +22,9 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Objects;
@@ -48,6 +50,11 @@ public final class ConversionManager {
 		Objects.requireNonNull(config, "config");
 
 		if (!source.isAlive() || source.isRemoved() || source instanceof AgentEntity) {
+			return false;
+		}
+		if (isBlockedFromAgentTransformation(source, config)) {
+			logDebug(config, "Denied Agent transformation for {} at {} because config excludes that mob from conversion",
+					EntityType.getKey(source.getType()), source.blockPosition());
 			return false;
 		}
 		if (isAgentCapReached(level, source, config)) {
@@ -104,6 +111,10 @@ public final class ConversionManager {
 			cancelTransformation(source, "source_invalid");
 			return Optional.empty();
 		}
+		if (isBlockedFromAgentTransformation(source, SimulationBreach.CONFIG)) {
+			cancelTransformation(source, "source_became_config_excluded_before_completion");
+			return Optional.empty();
+		}
 		if (!TransformationManager.isComplete(data.get(), level.getGameTime())) {
 			return Optional.empty();
 		}
@@ -131,6 +142,9 @@ public final class ConversionManager {
 		Objects.requireNonNull(random, "random");
 
 		if (!isAgentConversionTarget(target)) {
+			return false;
+		}
+		if (isBlockedFromAgentTransformation(target, config)) {
 			return false;
 		}
 
@@ -215,6 +229,12 @@ public final class ConversionManager {
 			return holder.simulationBreach$getBreachData();
 		}
 		return Optional.empty();
+	}
+
+	public static boolean isNameTaggedConversionImmune(LivingEntity entity, SimulationBreachConfig config) {
+		Objects.requireNonNull(entity, "entity");
+		Objects.requireNonNull(config, "config");
+		return config.excludeNamedEntities() && entity.hasCustomName();
 	}
 
 	public static BreachEntityData cleanDataFor(LivingEntity entity) {
@@ -317,6 +337,18 @@ public final class ConversionManager {
 			return false;
 		}
 		return true;
+	}
+
+	private static boolean isBlockedFromAgentTransformation(LivingEntity entity, SimulationBreachConfig config) {
+		if (isNameTaggedConversionImmune(entity, config)) {
+			return true;
+		}
+		if (config.excludeVillagers() && entity instanceof Villager) {
+			return true;
+		}
+		return config.excludeTamedAnimalsFromAgentSpread()
+				&& entity instanceof TamableAnimal tamableAnimal
+				&& tamableAnimal.isTame();
 	}
 
 	private static double agentConversionChance(

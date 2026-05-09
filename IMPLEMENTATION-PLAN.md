@@ -11,6 +11,8 @@
 
 ## Performance Log
 
+- 2026-05-09: Conversion exclusion config slice `./gradlew build` completed successfully in 1 second with the existing client deprecation note from `SimulationBreachClient` and Gradle's existing build-tooling deprecation warning.
+- 2026-05-09: Named-mob immunity slice `./gradlew build` completed successfully in 6 seconds with the existing client deprecation note from `SimulationBreachClient` and Gradle's existing build-tooling deprecation warning.
 - 2026-04-23: Agent death/reversion/block-pressure slice repository searches completed in under 1 second each using `find`/`grep` because `rg` is not installed.
 - 2026-04-23: Agent death/reversion/block-pressure slice first `./gradlew compileJava` completed successfully in 5 seconds.
 - 2026-04-23: Agent death/reversion/block-pressure slice `./gradlew compileClientJava` completed successfully in 1 second with the existing Fabric renderer deprecation note.
@@ -256,6 +258,30 @@
 - [x] Start transformation sound from the same client presentation event that starts shaking.
 - [x] Replace frozen-only shake with stronger client-side position and rotation offsets.
 - [x] Compile, build, and record performance.
+
+## 2026-05-09 Named Mob Conversion Immunity Slice
+
+- [x] Confirm current named-mob outbreak and spread behavior.
+- [x] Try to log a tracker issue for named-mob conversion immunity. Gitea repo access from this environment returned unauthenticated `404 Not Found`, so no tracker item was created.
+- [x] Prevent natural outbreaks and Agent spread from converting name-tagged mobs.
+- [x] Cancel pending Agent transformations when the source mob is name-tagged before completion.
+- [x] Update specs and README for the new immunity rule.
+- [x] Compile, build, and record performance.
+
+## 2026-05-09 Conversion Exclusion Config Slice
+
+- [x] Review existing villager, tamed-animal, and named-mob exclusion behavior.
+- [x] Add config support for named-entity conversion exclusion.
+- [x] Make villager exclusion apply to Agent-driven conversion as well as natural outbreaks.
+- [x] Add config support for excluding owned tamed animals from Agent spread separately from natural outbreaks.
+- [x] Update specs and README for the expanded exclusion settings.
+- [x] Compile, build, and record performance.
+
+## 2026-05-09 README Config Details Slice
+
+- [x] Review the current shipped config surface and defaults.
+- [x] Add a README configuration details subsection that documents each key and its meaning.
+- [x] Document `passivePromotionMode` choices in the README.
 
 ## Implementation Roadmap
 
